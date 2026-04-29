@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-container": "#c37b00",
+                    "on-tertiary": "#ffffff",
+                    "on-surface": "#181c1e",
+                    "surface-tint": "#54606b",
+                    "on-tertiary-fixed-variant": "#663e00",
+                    "error": "#ba1a1a",
+                    "surface-dim": "#d7dadc",
+                    "primary-container": "#1a252f",
+                    "on-secondary-fixed-variant": "#005228",
+                    "secondary": "#006d37",
+                    "tertiary-container": "#361f00",
+                    "secondary-fixed-dim": "#61de8a",
+                    "error-container": "#ffdad6",
+                    "outline": "#74777c",
+                    "tertiary-fixed-dim": "#ffb961",
+                    "background": "#f7fafc",
+                    "surface-container": "#ebeef0",
+                    "on-secondary-container": "#007239",
+                    "secondary-fixed": "#7efba4",
+                    "on-error": "#ffffff",
+                    "inverse-primary": "#bcc8d5",
+                    "outline-variant": "#c4c6cb",
+                    "on-surface-variant": "#44474b",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed": "#121d26",
+                    "inverse-on-surface": "#eef1f3",
+                    "inverse-surface": "#2d3133",
+                    "tertiary": "#190c00",
+                    "surface-variant": "#e0e3e5",
+                    "surface-container-highest": "#e0e3e5",
+                    "on-primary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-container": "#7bf8a1",
+                    "primary-fixed": "#d8e4f1",
+                    "surface-bright": "#f7fafc",
+                    "on-secondary": "#ffffff",
+                    "on-background": "#181c1e",
+                    "primary-fixed-dim": "#bcc8d5",
+                    "surface-container-low": "#f1f4f6",
+                    "tertiary-fixed": "#ffddb9",
+                    "on-primary-container": "#818c99",
+                    "surface": "#f7fafc",
+                    "primary": "#050f19",
+                    "on-secondary-fixed": "#00210c",
+                    "on-primary-fixed-variant": "#3d4853",
+                    "on-tertiary-fixed": "#2b1700",
+                    "surface-container-high": "#e5e9eb"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body selection:bg-secondary-fixed selection:text-on-secondary-fixed">
+<aside class="bg-slate-900 dark:bg-slate-950 font-inter tracking-tight antialiased text-sm font-medium h-screen w-64 border-r-0 shadow-2xl shadow-slate-950/20 fixed left-0 top-0 hidden md:flex flex-col p-6 z-50">
+<div class="mb-10">
+<h1 class="text-lg font-bold tracking-widest uppercase text-white">Sentinel Archive</h1>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white transition-colors hover:bg-slate-800/80 transition-all duration-300 rounded-md" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Live Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white transition-colors hover:bg-slate-800/80 transition-all duration-300 rounded-md" href="#">
+<span class="material-symbols-outlined" data-icon="route">route</span>
+<span>Collection Route</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white transition-colors hover:bg-slate-800/80 transition-all duration-300 rounded-md" href="#">
+<span class="material-symbols-outlined" data-icon="sensors">sensors</span>
+<span>Bin Detail</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-emerald-700 text-white rounded-md shadow-inner transition-transform scale-98 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="analytics" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span>Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white transition-colors hover:bg-slate-800/80 transition-all duration-300 rounded-md" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-slate-800/50">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl overflow-hidden bg-slate-800 flex items-center justify-center">
+<img alt="Operator Profile" data-alt="close-up portrait of a professional industrial technician in a high-tech control room environment, soft blue lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDw36kif0uG46UPu4h3zsZHZhBIZXdmm7FOK_bQuJrgb5n3LkdwAQpPP2hi4cbgf8zboSLDww3bMhur1eb6JqQE30NEaOWzeLe8_8SXy60p52zi81VGFd94nZu-EVLzYr8qti0V_Kt1E3LPCORvTf4JJ5_VcZC3Vcx4XX5-engZI1SzomWng86aHkTKWXMYKkoicC2Re7OcUKNE35BP5QSVNsaf_o72MtYW3UgHsU7MP_rEsbBVYM0uvUqdrpvrlY-7NXm8QfXprw"/>
+</div>
+<div class="overflow-hidden">
+<p class="text-white text-sm font-bold truncate">Sentinel Archive</p>
+<p class="text-slate-500 text-xs truncate">Lead Technician</p>
+</div>
+</div>
+</div>
+</aside>
+<main class="md:ml-64 min-h-screen pb-24 md:pb-12">
+<header class="bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40 w-full h-16 flex items-center justify-between px-8 flat no-border tonal-depth shadow-sm">
+<div class="flex items-center gap-4">
+<button class="md:hidden p-2 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-full smooth-fade transition-opacity">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h2 class="font-inter text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Operational Overview</h2>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden sm:flex flex-col items-end">
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">System Status</span>
+<span class="text-xs font-semibold text-secondary">OPTIMIZED</span>
+</div>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden">
+<img alt="System Status" data-alt="minimalist user interface avatar representing a system administrator icon in flat vector style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0vna0a7bFR1fILHBNIXobLR19KsAF9B-r6Hduu8cgtfdw88Ellq_Le9P8lXCAf4FbknVlaHlYk7jYjJBBwcE0LqWcXa3t_9I57aLscuXndn5OZsNhZeUCmrkM2NrvyhNJnNIBEdE-9IRzwdL_y7yWpQZAlsOv3pGjfTPbgF7Fxu7Q7_LLRgYzJbS5o1G549NGadWbo_W0zTy2y1HgWcBtUM05CLzO_q06PIW3YiOfgfF1IEusiRwpQKlC5DVQIHFRA7_FwIEKdQ"/>
+</div>
+</div>
+</header>
+<div class="p-8 space-y-8">
+<section class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+<div class="lg:col-span-1 flex flex-col gap-6">
+<div class="bg-surface-container-lowest p-6 rounded-xl relative overflow-hidden">
+<div class="absolute left-0 top-0 w-1 h-full bg-primary"></div>
+<p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Fleet Efficiency</p>
+<h3 class="text-4xl font-bold tracking-tight text-on-surface">94.2<span class="text-xl font-medium text-on-surface-variant">%</span></h3>
+<div class="mt-4 flex items-center gap-2">
+<span class="text-xs text-secondary font-bold flex items-center">
+<span class="material-symbols-outlined text-sm" data-icon="arrow_upward">arrow_upward</span> 2.4%
+                            </span>
+<span class="text-xs text-on-surface-variant">vs last month</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl relative overflow-hidden">
+<div class="absolute left-0 top-0 w-1 h-full bg-secondary"></div>
+<p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Total Tonnage</p>
+<h3 class="text-4xl font-bold tracking-tight text-on-surface">1,842<span class="text-xl font-medium text-on-surface-variant">t</span></h3>
+<div class="mt-4 w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-secondary to-secondary-fixed-dim" style="width: 78%;"></div>
+</div>
+</div>
+</div>
+<div class="lg:col-span-3 bg-surface-container-lowest p-6 rounded-xl">
+<div class="flex justify-between items-center mb-8">
+<div>
+<h4 class="text-lg font-bold text-on-surface">Sensor Failure Rate Over Time</h4>
+<p class="text-sm text-on-surface-variant">Monitoring hardware reliability across fleet</p>
+</div>
+<div class="flex gap-2">
+<button class="px-3 py-1 text-[10px] font-bold bg-surface-container-high rounded-md">7D</button>
+<button class="px-3 py-1 text-[10px] font-bold bg-primary text-white rounded-md">30D</button>
+<button class="px-3 py-1 text-[10px] font-bold bg-surface-container-high rounded-md">90D</button>
+</div>
+</div>
+<div class="h-48 flex items-end justify-between gap-2 px-2 border-l border-b border-outline-variant/20 relative">
+<!-- Line Chart Visualization (Mockup) -->
+<svg class="absolute inset-0 w-full h-full p-4 overflow-visible" preserveaspectratio="none" viewbox="0 0 100 40">
+<path class="text-error" d="M0,35 Q10,32 20,36 T40,28 T60,30 T80,22 T100,25" fill="none" stroke="currentColor" stroke-width="1"></path>
+<circle class="fill-error" cx="20" cy="36" r="1.5"></circle>
+<circle class="fill-error" cx="40" cy="28" r="1.5"></circle>
+<circle class="fill-error" cx="80" cy="22" r="1.5"></circle>
+</svg>
+<div class="w-full h-full flex justify-between items-end opacity-5">
+<div class="w-px h-full bg-outline-variant"></div>
+<div class="w-px h-full bg-outline-variant"></div>
+<div class="w-px h-full bg-outline-variant"></div>
+<div class="w-px h-full bg-outline-variant"></div>
+<div class="w-px h-full bg-outline-variant"></div>
+</div>
+</div>
+<div class="flex justify-between mt-4">
+<span class="text-[10px] font-bold text-on-surface-variant">MAR 01</span>
+<span class="text-[10px] font-bold text-on-surface-variant">MAR 07</span>
+<span class="text-[10px] font-bold text-on-surface-variant">MAR 14</span>
+<span class="text-[10px] font-bold text-on-surface-variant">MAR 21</span>
+<span class="text-[10px] font-bold text-on-surface-variant">MAR 30</span>
+</div>
+</div>
+</section>
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="bg-surface-container-lowest p-6 rounded-xl flex flex-col">
+<h4 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant mb-6">Fill Distribution</h4>
+<div class="flex-1 flex items-end gap-1 h-40">
+<div class="flex-1 bg-surface-container-high h-[10%] rounded-t-sm"></div>
+<div class="flex-1 bg-surface-container-high h-[25%] rounded-t-sm"></div>
+<div class="flex-1 bg-surface-container-high h-[45%] rounded-t-sm"></div>
+<div class="flex-1 bg-secondary h-[85%] rounded-t-sm"></div>
+<div class="flex-1 bg-secondary h-[95%] rounded-t-sm"></div>
+<div class="flex-1 bg-surface-container-high h-[60%] rounded-t-sm"></div>
+<div class="flex-1 bg-surface-container-high h-[30%] rounded-t-sm"></div>
+<div class="flex-1 bg-surface-container-high h-[15%] rounded-t-sm"></div>
+</div>
+<div class="flex justify-between mt-3">
+<span class="text-[10px] font-bold text-on-surface-variant">0%</span>
+<span class="text-[10px] font-bold text-on-surface-variant">Fill Level</span>
+<span class="text-[10px] font-bold text-on-surface-variant">100%</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl flex flex-col">
+<h4 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant mb-6">Bin Type Status Breakdown</h4>
+<div class="space-y-6">
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<span class="text-xs font-bold text-on-surface">Industrial Metal</span>
+<span class="text-[10px] font-bold text-on-surface-variant">128 UNITS</span>
+</div>
+<div class="flex h-4 w-full rounded-md overflow-hidden">
+<div class="bg-secondary h-full" style="width: 60%"></div>
+<div class="bg-on-tertiary-container h-full" style="width: 25%"></div>
+<div class="bg-error h-full" style="width: 15%"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<span class="text-xs font-bold text-on-surface">Recyclable Plastic</span>
+<span class="text-[10px] font-bold text-on-surface-variant">342 UNITS</span>
+</div>
+<div class="flex h-4 w-full rounded-md overflow-hidden">
+<div class="bg-secondary h-full" style="width: 80%"></div>
+<div class="bg-on-tertiary-container h-full" style="width: 15%"></div>
+<div class="bg-error h-full" style="width: 5%"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<span class="text-xs font-bold text-on-surface">Hazardous Waste</span>
+<span class="text-[10px] font-bold text-on-surface-variant">42 UNITS</span>
+</div>
+<div class="flex h-4 w-full rounded-md overflow-hidden">
+<div class="bg-secondary h-full" style="width: 40%"></div>
+<div class="bg-on-tertiary-container h-full" style="width: 40%"></div>
+<div class="bg-error h-full" style="width: 20%"></div>
+</div>
+</div>
+</div>
+<div class="mt-6 flex gap-4">
+<div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-secondary"></div><span class="text-[8px] font-bold uppercase tracking-tighter text-on-surface-variant">Normal</span></div>
+<div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-on-tertiary-container"></div><span class="text-[8px] font-bold uppercase tracking-tighter text-on-surface-variant">Warning</span></div>
+<div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-error"></div><span class="text-[8px] font-bold uppercase tracking-tighter text-on-surface-variant">Critical</span></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl flex flex-col">
+<h4 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant mb-6">Avg Fill by Bin Type</h4>
+<div class="flex-1 flex flex-col justify-around">
+<div class="space-y-1">
+<div class="flex justify-between text-[10px] font-bold">
+<span class="text-on-surface">METAL</span>
+<span class="text-on-surface-variant">82%</span>
+</div>
+<div class="h-2 bg-surface-container-low rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 82%"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-[10px] font-bold">
+<span class="text-on-surface">PLASTIC</span>
+<span class="text-on-surface-variant">65%</span>
+</div>
+<div class="h-2 bg-surface-container-low rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 65%"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-[10px] font-bold">
+<span class="text-on-surface">PAPER</span>
+<span class="text-on-surface-variant">42%</span>
+</div>
+<div class="h-2 bg-surface-container-low rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 42%"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-[10px] font-bold">
+<span class="text-on-surface">ORGANIC</span>
+<span class="text-on-surface-variant">91%</span>
+</div>
+<div class="h-2 bg-surface-container-low rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 91%"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm">
+<div class="p-6 flex justify-between items-center bg-surface-container-low">
+<h4 class="text-sm font-bold uppercase tracking-widest text-on-surface">Top 10 Most Frequently Critical Bins</h4>
+<button class="text-[10px] font-bold text-secondary-container bg-secondary px-3 py-1.5 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span> EXPORT LOG
+                    </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container border-b border-outline-variant/10">
+<th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">ID Reference</th>
+<th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Location Zone</th>
+<th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Type</th>
+<th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Avg Fill Rate</th>
+<th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Critical Events</th>
+<th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Last Event</th>
+</tr>
+</thead>
+<tbody class="divide-y-0">
+<tr class="hover:bg-primary-fixed/40 transition-colors">
+<td class="px-6 py-4 text-sm font-bold font-mono">BIN-90231</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">Sector 4-B Industrial</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-[10px] font-bold uppercase tracking-tighter">METAL</span>
+</td>
+<td class="px-6 py-4 text-sm font-medium">92%</td>
+<td class="px-6 py-4 text-sm font-bold text-error">12</td>
+<td class="px-6 py-4 text-xs text-on-surface-variant">2h ago</td>
+</tr>
+<tr class="bg-surface-container-low/30 hover:bg-primary-fixed/40 transition-colors">
+<td class="px-6 py-4 text-sm font-bold font-mono">BIN-88120</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">North Transit Terminal</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-[10px] font-bold uppercase tracking-tighter text-on-surface-variant">PLASTIC</span>
+</td>
+<td class="px-6 py-4 text-sm font-medium">88%</td>
+<td class="px-6 py-4 text-sm font-bold text-error">9</td>
+<td class="px-6 py-4 text-xs text-on-surface-variant">4h ago</td>
+</tr>
+<tr class="hover:bg-primary-fixed/40 transition-colors">
+<td class="px-6 py-4 text-sm font-bold font-mono">BIN-11024</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">East Logistics Hub</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-[10px] font-bold uppercase tracking-tighter text-on-surface-variant">ORGANIC</span>
+</td>
+<td class="px-6 py-4 text-sm font-medium">96%</td>
+<td class="px-6 py-4 text-sm font-bold text-error">8</td>
+<td class="px-6 py-4 text-xs text-on-surface-variant">12h ago</td>
+</tr>
+<tr class="bg-surface-container-low/30 hover:bg-primary-fixed/40 transition-colors">
+<td class="px-6 py-4 text-sm font-bold font-mono">BIN-77239</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">Central Maintenance</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-[10px] font-bold uppercase tracking-tighter text-on-surface-variant">HAZARDOUS</span>
+</td>
+<td class="px-6 py-4 text-sm font-medium">74%</td>
+<td class="px-6 py-4 text-sm font-bold text-error">6</td>
+<td class="px-6 py-4 text-xs text-on-surface-variant">1d ago</td>
+</tr>
+<tr class="hover:bg-primary-fixed/40 transition-colors">
+<td class="px-6 py-4 text-sm font-bold font-mono">BIN-44012</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">West Loading Docks</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-[10px] font-bold uppercase tracking-tighter text-on-surface-variant">PAPER</span>
+</td>
+<td class="px-6 py-4 text-sm font-medium">81%</td>
+<td class="px-6 py-4 text-sm font-bold text-error">5</td>
+<td class="px-6 py-4 text-xs text-on-surface-variant">1d ago</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+</main>
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center py-3 px-4 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl shadow-[0_-10px_30px_rgba(0,0,0,0.05)] rounded-t-xl">
+<a class="flex flex-col items-center text-slate-400 dark:text-slate-600 active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-inter text-[10px] font-bold uppercase tracking-widest">Home</span>
+</a>
+<a class="flex flex-col items-center text-slate-400 dark:text-slate-600 active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="map">map</span>
+<span class="font-inter text-[10px] font-bold uppercase tracking-widest">Routes</span>
+</a>
+<a class="flex flex-col items-center text-slate-400 dark:text-slate-600 active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="delete_outline">delete_outline</span>
+<span class="font-inter text-[10px] font-bold uppercase tracking-widest">Bins</span>
+</a>
+<a class="flex flex-col items-center text-emerald-600 dark:text-emerald-400 scale-110 active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="bar_chart" style="font-variation-settings: 'FILL' 1;">bar_chart</span>
+<span class="font-inter text-[10px] font-bold uppercase tracking-widest">Data</span>
+</a>
+<a class="flex flex-col items-center text-slate-400 dark:text-slate-600 active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-inter text-[10px] font-bold uppercase tracking-widest">Settings</span>
+</a>
+</nav>
+</body></html>

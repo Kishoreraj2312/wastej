@@ -1,0 +1,25 @@
+services:
+  # ── Backend Flask API ──
+  - type: web
+    name: stitch-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python backend/app.py
+    envVars:
+      - key: PORT
+        value: 5001
+      - key: CORS_ORIGIN
+        value: '*'
+
+  # ── Frontend Vite React App ──
+  - type: web
+    name: stitch-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: stitch-backend
+          envVarKey: RENDER_EXTERNAL_URL

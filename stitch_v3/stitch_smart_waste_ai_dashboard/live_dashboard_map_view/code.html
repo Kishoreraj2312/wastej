@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Operational Sentinel - Live Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#181c1e",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#005228",
+                        "tertiary-fixed-dim": "#ffb961",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#61de8a",
+                        "on-tertiary-fixed-variant": "#663e00",
+                        "surface-tint": "#54606b",
+                        "surface-bright": "#f7fafc",
+                        "on-tertiary-fixed": "#2b1700",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f1f4f6",
+                        "surface-dim": "#d7dadc",
+                        "on-primary-fixed-variant": "#3d4853",
+                        "secondary-fixed": "#7efba4",
+                        "on-secondary-fixed": "#00210c",
+                        "on-primary-container": "#818c99",
+                        "primary": "#050f19",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#ffddb9",
+                        "primary-fixed": "#d8e4f1",
+                        "primary-fixed-dim": "#bcc8d5",
+                        "on-surface-variant": "#44474b",
+                        "on-secondary": "#ffffff",
+                        "primary-container": "#1a252f",
+                        "on-background": "#181c1e",
+                        "outline-variant": "#c4c6cb",
+                        "surface-container-high": "#e5e9eb",
+                        "on-tertiary-container": "#c37b00",
+                        "on-primary": "#ffffff",
+                        "inverse-surface": "#2d3133",
+                        "surface": "#f7fafc",
+                        "inverse-on-surface": "#eef1f3",
+                        "background": "#f7fafc",
+                        "tertiary": "#190c00",
+                        "outline": "#74777c",
+                        "on-primary-fixed": "#121d26",
+                        "inverse-primary": "#bcc8d5",
+                        "secondary-container": "#7bf8a1",
+                        "tertiary-container": "#361f00",
+                        "on-secondary-container": "#007239",
+                        "secondary": "#006d37",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-error-container": "#93000a",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e0e3e5",
+                        "surface-container": "#ebeef0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen">
+<!-- NavigationDrawer (Shared Component) -->
+<aside class="w-72 h-full fixed left-0 top-0 bg-[#050f19] dark:bg-[#050f19] bg-gradient-to-b from-[#050f19] to-[#1a252f] shadow-2xl shadow-black/20 flex flex-col h-screen z-50 hidden md:flex">
+<div class="px-6 py-8 flex flex-col gap-1">
+<span class="text-xl font-bold tracking-[0.05em] text-white">Sentinel Archive</span>
+<span class="text-slate-400 font-['Inter'] tracking-tight text-[10px] uppercase font-semibold">Industrial Waste Ops</span>
+</div>
+<nav class="flex-1 px-4 space-y-2">
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-white bg-[#006d37]/20 border-l-4 border-[#006d37] font-bold transition-transform scale-95" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Overview</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-[#1a252f] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Fleet Map</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-[#1a252f] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">delete_sweep</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Waste Stream</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-[#1a252f] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Analytics</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-[#1a252f] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Archive Settings</span>
+</a>
+</nav>
+<div class="p-6 border-t border-white/5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-white font-bold">AU</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-white">Admin User</span>
+<span class="text-xs text-slate-500">System Overseer</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="md:ml-72 flex-1 relative min-h-screen flex flex-col">
+<!-- TopAppBar (Shared Component) -->
+<header class="w-full sticky top-0 z-40 bg-[#f7fafc]/80 dark:bg-[#050f19]/80 backdrop-blur-xl flex items-center justify-between px-8 h-20 bg-[#f1f4f6] dark:bg-[#1a252f] border-none shadow-sm shadow-[0_20px_40px_rgba(24,28,30,0.06)]">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-[#050f19] dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full p-2 active:opacity-70">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="text-lg font-black text-[#050f19] dark:text-white font-['Inter'] font-medium tracking-tight">Operational Sentinel</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full p-2 active:opacity-70">
+<span class="material-symbols-outlined">notifications_active</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant/20 mx-2"></div>
+<div class="text-right hidden sm:block">
+<p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">System Status</p>
+<p class="text-xs font-semibold text-secondary">ALL SYSTEMS NOMINAL</p>
+</div>
+</div>
+</header>
+<section class="p-8 space-y-8 flex-1 pb-32 md:pb-8">
+<!-- KPI Overview Cards -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+<div class="bg-surface-container-lowest p-6 rounded-xl relative overflow-hidden group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-secondary"></div>
+<p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Total Tonnage</p>
+<h2 class="text-4xl font-bold text-on-surface tracking-tighter">1,248.5</h2>
+<p class="text-xs text-secondary font-medium mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span> +12% vs last month
+                    </p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-error"></div>
+<p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Critical Bins</p>
+<h2 class="text-4xl font-bold text-on-surface tracking-tighter">07</h2>
+<p class="text-xs text-error font-medium mt-2">Action required immediately</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Active Fleet</p>
+<h2 class="text-4xl font-bold text-on-surface tracking-tighter">24/25</h2>
+<p class="text-xs text-on-surface-variant font-medium mt-2">96% operational capacity</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-tertiary-fixed-dim"></div>
+<p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Avg Fill Rate</p>
+<h2 class="text-4xl font-bold text-on-surface tracking-tighter">64%</h2>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full mt-3 overflow-hidden">
+<div class="bg-gradient-to-r from-secondary to-secondary-fixed-dim h-full" style="width: 64%"></div>
+</div>
+</div>
+</div>
+<!-- Leaflet Map Section -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden relative shadow-[0_20px_40px_rgba(24,28,30,0.06)]">
+<div class="p-6 flex justify-between items-center border-b border-outline-variant/10">
+<div>
+<h3 class="text-lg font-bold text-on-surface leading-tight">Sector Live Mapping</h3>
+<p class="text-xs text-on-surface-variant">Real-time telemetry for 80 waste collection nodes</p>
+</div>
+<div class="flex gap-2">
+<button class="bg-surface-container-high px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-surface-container-highest transition-colors">
+                            Filter Critical
+                        </button>
+<button class="bg-primary text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider active:scale-95 transition-transform">
+                            Full Screen
+                        </button>
+</div>
+</div>
+<!-- Map Canvas -->
+<div class="h-[500px] w-full relative bg-surface-container-low">
+<img alt="System Map" class="w-full h-full object-cover opacity-60 mix-blend-multiply grayscale" data-alt="high-quality dark themed city map with glowing route lines and subtle data visualization overlays showing urban infrastructure" src="https://lh3.googleusercontent.com/aida-public/AB6AXuByUfhYV6XGocp45sGxBHOiQJo27JpVPevLfwfPEWQYGoS-0IiuxbYN6T6rsNpCyuvQ5soyREW5OBUQidyA646c4q5CH88S6Pyxa5i4u3xdHMkhyt1Q-vXDduByF1wsHXvjYNJc6z9smqz3Gn958IGH1ydk-ZA5Q7fHVFGUbQYhRaEqsby9C_D2g8vXFryly4CmP1njMnM6J5LygIFEXsyRNCM9PQ2C_wJ76xcUrpaow0epsSd5Xdhe3S3caJohbnIAHJdYZ-V-Yg"/>
+<!-- Simulated Markers (80 bins representation) -->
+<!-- RED MARKERS -->
+<div class="absolute top-1/4 left-1/3 w-4 h-4 bg-error rounded-full border-2 border-white shadow-lg animate-pulse"></div>
+<div class="absolute top-1/2 left-1/4 w-4 h-4 bg-error rounded-full border-2 border-white shadow-lg animate-pulse"></div>
+<div class="absolute bottom-1/4 right-1/3 w-4 h-4 bg-error rounded-full border-2 border-white shadow-lg animate-pulse"></div>
+<!-- AMBER MARKERS -->
+<div class="absolute top-1/3 right-1/4 w-3 h-3 bg-tertiary-fixed-dim rounded-full border border-white shadow-md"></div>
+<div class="absolute bottom-1/2 left-2/3 w-3 h-3 bg-tertiary-fixed-dim rounded-full border border-white shadow-md"></div>
+<!-- GREEN MARKERS (Dense Clustering) -->
+<div class="absolute top-10 right-20 w-2 h-2 bg-secondary rounded-full border border-white/50"></div>
+<div class="absolute top-40 right-40 w-2 h-2 bg-secondary rounded-full border border-white/50"></div>
+<div class="absolute top-20 left-60 w-2 h-2 bg-secondary rounded-full border border-white/50"></div>
+<div class="absolute bottom-20 left-40 w-2 h-2 bg-secondary rounded-full border border-white/50"></div>
+<div class="absolute bottom-10 right-10 w-2 h-2 bg-secondary rounded-full border border-white/50"></div>
+<!-- Overlay Panel -->
+<div class="absolute top-6 left-6 w-64 bg-surface-container-lowest/90 backdrop-blur-md p-4 rounded-xl shadow-xl border border-outline-variant/10">
+<div class="flex items-center justify-between mb-4">
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Live Traffic</span>
+<span class="w-2 h-2 bg-secondary rounded-full animate-ping"></span>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-center">
+<span class="text-xs font-medium text-on-surface-variant">Sector Alpha</span>
+<span class="text-xs font-bold text-on-surface">Heavy</span>
+</div>
+<div class="w-full bg-surface-container-high h-1 rounded-full">
+<div class="bg-error h-full" style="width: 85%"></div>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-xs font-medium text-on-surface-variant">Sector Gamma</span>
+<span class="text-xs font-bold text-on-surface">Light</span>
+</div>
+<div class="w-full bg-surface-container-high h-1 rounded-full">
+<div class="bg-secondary h-full" style="width: 15%"></div>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/10">
+<p class="text-[9px] text-on-surface-variant leading-tight">Optimal collection route calculated. Deployment suggested for 3 units.</p>
+</div>
+</div>
+<!-- Legend Overlay -->
+<div class="absolute bottom-6 right-6 flex gap-4 bg-primary text-white px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider backdrop-blur-lg bg-opacity-90 shadow-2xl">
+<div class="flex items-center gap-2"><span class="w-2 h-2 bg-error rounded-full"></span> Critical</div>
+<div class="flex items-center gap-2"><span class="w-2 h-2 bg-tertiary-fixed-dim rounded-full"></span> Warning</div>
+<div class="flex items-center gap-2"><span class="w-2 h-2 bg-secondary rounded-full"></span> Normal</div>
+</div>
+</div>
+</div>
+<!-- Bin Status Table -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-[0_20px_40px_rgba(24,28,30,0.06)]">
+<div class="p-6 border-b border-outline-variant/10">
+<h3 class="text-lg font-bold text-on-surface">Detailed Bin Telemetry</h3>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low">
+<th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">ID / Location</th>
+<th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Stream Type</th>
+<th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Fill Level</th>
+<th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Last Update</th>
+<th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/5">
+<tr class="hover:bg-primary-fixed/40 transition-colors">
+<td class="px-6 py-4">
+<div class="font-bold text-on-surface text-sm">#BN-8021</div>
+<div class="text-xs text-on-surface-variant">42nd St &amp; Lex Ave</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-surface-container-high text-on-surface-variant uppercase tracking-wider">
+                                        Plastic &amp; Glass
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-24 bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-error h-full" style="width: 94%"></div>
+</div>
+<span class="text-xs font-bold text-on-surface">94%</span>
+</div>
+</td>
+<td class="px-6 py-4 text-xs text-on-surface-variant font-medium">2 mins ago</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 rounded-full text-[10px] font-bold bg-error-container text-on-error-container uppercase tracking-wider">Critical</span>
+</td>
+</tr>
+<tr class="bg-surface-container-low/30 hover:bg-primary-fixed/40 transition-colors">
+<td class="px-6 py-4">
+<div class="font-bold text-on-surface text-sm">#BN-7992</div>
+<div class="text-xs text-on-surface-variant">Central Park West</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-surface-container-high text-on-surface-variant uppercase tracking-wider">
+                                        Organic
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-24 bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-tertiary-fixed-dim h-full" style="width: 78%"></div>
+</div>
+<span class="text-xs font-bold text-on-surface">78%</span>
+</div>
+</td>
+<td class="px-6 py-4 text-xs text-on-surface-variant font-medium">12 mins ago</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 rounded-full text-[10px] font-bold bg-tertiary-container text-on-tertiary-container uppercase tracking-wider" style="color:#663e00; background-color:#ffddb9;">Warning</span>
+</td>
+</tr>
+<tr class="hover:bg-primary-fixed/40 transition-colors">
+<td class="px-6 py-4">
+<div class="font-bold text-on-surface text-sm">#BN-8104</div>
+<div class="text-xs text-on-surface-variant">Broadway Theatre Dist.</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-surface-container-high text-on-surface-variant uppercase tracking-wider">
+                                        Paper / Card
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-24 bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-secondary h-full" style="width: 32%"></div>
+</div>
+<span class="text-xs font-bold text-on-surface">32%</span>
+</div>
+</td>
+<td class="px-6 py-4 text-xs text-on-surface-variant font-medium">45 mins ago</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 rounded-full text-[10px] font-bold bg-secondary-container text-on-secondary-container uppercase tracking-wider">Normal</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 bg-surface-container-low/50 text-center">
+<button class="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant hover:text-primary transition-colors">View All Archive entries</button>
+</div>
+</div>
+</section>
+<!-- BottomNavBar (Shared Component) - Mobile Only -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-6 bg-white/90 dark:bg-[#050f19]/90 backdrop-blur-lg border-t border-slate-200/10 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] rounded-t-xl">
+<a class="flex flex-col items-center justify-center bg-[#006d37] text-white rounded-xl py-2 px-4 active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-['Inter'] text-[11px] font-bold tracking-wider uppercase">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 py-2 hover:text-[#006d37] active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-['Inter'] text-[11px] font-bold tracking-wider uppercase">Map</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 py-2 hover:text-[#006d37] active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined">warning</span>
+<span class="font-['Inter'] text-[11px] font-bold tracking-wider uppercase">Alerts</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 py-2 hover:text-[#006d37] active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined">tune</span>
+<span class="font-['Inter'] text-[11px] font-bold tracking-wider uppercase">Settings</span>
+</a>
+</nav>
+</main>
+</body></html>

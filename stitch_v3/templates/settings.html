@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Smart Waste Dashboard | Operational Config</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#c37b00",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#181c1e",
+                        "surface-tint": "#54606b",
+                        "on-tertiary-fixed-variant": "#663e00",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#d7dadc",
+                        "primary-container": "#1a252f",
+                        "on-secondary-fixed-variant": "#005228",
+                        "secondary": "#006d37",
+                        "tertiary-container": "#361f00",
+                        "secondary-fixed-dim": "#61de8a",
+                        "error-container": "#ffdad6",
+                        "outline": "#74777c",
+                        "tertiary-fixed-dim": "#ffb961",
+                        "background": "#f7fafc",
+                        "surface-container": "#ebeef0",
+                        "on-secondary-container": "#007239",
+                        "secondary-fixed": "#7efba4",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#bcc8d5",
+                        "outline-variant": "#c4c6cb",
+                        "on-surface-variant": "#44474b",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#121d26",
+                        "inverse-on-surface": "#eef1f3",
+                        "inverse-surface": "#2d3133",
+                        "tertiary": "#190c00",
+                        "surface-variant": "#e0e3e5",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-primary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#7bf8a1",
+                        "primary-fixed": "#d8e4f1",
+                        "surface-bright": "#f7fafc",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#181c1e",
+                        "primary-fixed-dim": "#bcc8d5",
+                        "surface-container-low": "#f1f4f6",
+                        "tertiary-fixed": "#ffddb9",
+                        "on-primary-container": "#818c99",
+                        "surface": "#f7fafc",
+                        "primary": "#050f19",
+                        "on-secondary-fixed": "#00210c",
+                        "on-primary-fixed-variant": "#3d4853",
+                        "on-tertiary-fixed": "#2b1700",
+                        "surface-container-high": "#e5e9eb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .glass-panel {
+            background: rgba(224, 227, 229, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(196, 198, 203, 0.15);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface antialiased flex min-h-screen">
+<!-- NavigationDrawer (Sentinel Sidebar) -->
+<aside class="hidden md:flex fixed left-0 top-0 h-full w-64 bg-slate-900 dark:bg-slate-950 flex-col p-6 shadow-2xl shadow-slate-950/20 z-50">
+<div class="mb-10">
+<span class="text-lg font-bold tracking-widest uppercase text-white">Smart Waste Dashboard</span>
+</div>
+<nav class="flex-1 px-4 space-y-2">
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-[#1a252f] transition-colors duration-200" href="/dashboard">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Overview</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-[#1a252f] transition-colors duration-200" href="/route">
+<span class="material-symbols-outlined">map</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Fleet Map</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-[#1a252f] transition-colors duration-200" href="/waste_stream">
+<span class="material-symbols-outlined">delete_sweep</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Waste Stream</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-[#1a252f] transition-colors duration-200" href="/analytics">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Analytics</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-white bg-[#006d37]/20 border-l-4 border-[#006d37] font-bold transition-transform scale-95" href="/settings">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Archive Settings</span>
+</a>
+</nav>
+<div class="mt-auto p-6 border-t border-slate-800/50">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKxrek-a-mwetdCkWc_9uA5LAVkd9O-AseauWLQa3TKqEfn3wxBN4E1GNa2UhaVdMbrDsFBjB_KJEikyll5rv_nncHkRdtg-Zg_8BLyMMk21VtSyud_LpfyO4YYdaW5t29DWcFQ4MEUQ_hndThbIgCRFNgitu7Xp3sXaBu2g3cnCm9hT3Jtq5ZF2eiyQ8nOcE0ZTLzHXQ997_dz4kGDrJiM2sRa5P77V4cX6c4i6QPrOrEQsu0i5BMHVV3OGwU7T8pjiS1PAx1NQ" alt="Avatar"/>
+</div>
+<div>
+<p class="text-white text-xs font-bold tracking-tight">Lead Technician</p>
+<p class="text-slate-500 text-[10px] uppercase tracking-wider">Industrial Waste Unit</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-64 flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="flex items-center justify-between px-8 w-full h-16 sticky top-0 z-40 bg-slate-50/80 backdrop-blur-md shadow-sm">
+<div class="flex items-center gap-4">
+<button class="md:hidden p-2 hover:bg-slate-200/50 rounded-full transition-opacity">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-inter text-2xl font-semibold tracking-tight text-slate-900">Operational Overview</h1>
+</div>
+<div class="flex items-center gap-3">
+<span class="hidden sm:block text-[10px] font-bold uppercase tracking-widest text-slate-500">System Status: Optimal</span>
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+</header>
+<!-- Content Area -->
+<div class="p-8 lg:p-12 space-y-12 max-w-6xl">
+<!-- Page Heading -->
+<section class="space-y-2">
+<h2 class="text-[2.75rem] font-black tracking-tighter text-primary leading-none">Settings Archive</h2>
+<p class="text-on-surface-variant font-medium max-w-xl">Configure structural parameters for autonomous bin monitoring and sensor lifecycle management.</p>
+</section>
+<!-- Settings Grid -->
+<form class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: Thresholds -->
+<div class="lg:col-span-7 space-y-8">
+<div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-primary" data-icon="warning">warning</span>
+<h3 class="text-lg font-bold tracking-tight uppercase">Operational Thresholds</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-1.5">
+<label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Red (Critical) Fill %</label>
+<input id="red_threshold" class="w-full bg-surface-container-low border-none rounded-md focus:ring-2 focus:ring-primary text-sm py-3 px-4 font-semibold" placeholder="80" type="number" value="80"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Yellow (Medium) Fill %</label>
+<input id="yellow_threshold" class="w-full bg-surface-container-low border-none rounded-md focus:ring-2 focus:ring-primary text-sm py-3 px-4 font-semibold" placeholder="50" type="number" value="50"/>
+</div>
+<div class="md:col-span-2 space-y-1.5">
+<label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Dangerous Gas (PPM)</label>
+<div class="relative">
+<input id="dangerous_gas" class="w-full bg-surface-container-low border-none rounded-md focus:ring-2 focus:ring-primary text-sm py-3 px-4 font-semibold" placeholder="450" type="number" value="450"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-on-surface-variant">PARTICLES</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Sensors Section -->
+<div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-secondary"></div>
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-secondary" data-icon="sensors">sensors</span>
+<h3 class="text-lg font-bold tracking-tight uppercase">Sensor Orchestration</h3>
+</div>
+<div class="space-y-6">
+<div class="flex items-center justify-between group">
+<div class="space-y-0.5">
+<p class="font-bold text-sm">Interval Setting</p>
+<p class="text-xs text-on-surface-variant">Frequency of data packet transmission</p>
+</div>
+<div class="flex items-center gap-3">
+<input id="sensor_interval" class="w-20 text-center bg-surface-container-low border-none rounded-md focus:ring-2 focus:ring-secondary text-sm py-2 font-bold" type="text" value="6"/>
+<span class="text-[10px] font-bold tracking-widest text-on-surface-variant uppercase">HOURS</span>
+</div>
+</div>
+<div class="flex items-center justify-between group">
+<div class="space-y-0.5">
+<p class="font-bold text-sm">Training Lifecycle</p>
+<p class="text-xs text-on-surface-variant">Retrain ultrasonic logic every N cycles</p>
+</div>
+<div class="flex items-center gap-3">
+<input id="retrain_cycles" class="w-20 text-center bg-surface-container-low border-none rounded-md focus:ring-2 focus:ring-secondary text-sm py-2 font-bold" type="text" value="120"/>
+<span class="text-[10px] font-bold tracking-widest text-on-surface-variant uppercase">CYCLES</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Fleet Configuration Section -->
+<div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-on-tertiary-container"></div>
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-on-tertiary-container" data-icon="local_shipping">local_shipping</span>
+<h3 class="text-lg font-bold tracking-tight uppercase">Fleet Configuration</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-1.5">
+<label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Number of Trucks</label>
+<div class="relative">
+<input id="num_trucks" class="w-full bg-surface-container-low border-none rounded-md focus:ring-2 focus:ring-primary text-sm py-3 px-4 font-semibold" placeholder="3" type="number" value="3"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-on-surface-variant">VEHICLES</span>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Truck Capacity</label>
+<div class="relative">
+<input id="truck_capacity" class="w-full bg-surface-container-low border-none rounded-md focus:ring-2 focus:ring-primary text-sm py-3 px-4 font-semibold" placeholder="500" type="number" value="500"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-on-surface-variant">KG</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: System & Actions -->
+<div class="lg:col-span-5 space-y-8">
+<!-- System Health Glass Card -->
+<div class="glass-panel rounded-xl p-8 space-y-6">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="memory">memory</span>
+<h3 class="text-lg font-bold tracking-tight uppercase">System Core</h3>
+</div>
+<div class="space-y-4">
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Sensor Failure Rate Tolerance</label>
+<span class="text-sm font-bold text-error">4.2%</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-secondary to-secondary-fixed-dim rounded-full" style="width: 42%;"></div>
+</div>
+<div class="flex justify-between text-[10px] font-medium text-slate-400">
+<span>STABLE</span>
+<span>CRITICAL (15%+)</span>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant/20">
+<p class="text-xs leading-relaxed text-on-surface-variant italic">
+                                    "The Smart Waste Dashboard maintains a baseline reliability of 99.8% across distributed units."
+                                </p>
+</div>
+</div>
+</div>
+<!-- Visual Data Abstract -->
+<div class="h-48 rounded-xl relative overflow-hidden bg-primary shadow-xl">
+<div class="absolute inset-0 opacity-40">
+<img class="w-full h-full object-cover" data-alt="abstract close-up of computer circuit board with glowing green lights and deep shadows in industrial style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQRyH10xWy_7L7m2Nl1NJXI7t3CdiH7xlxQXsqfMHVeRR79D7idgx9DomNEUsoDrMC3SFnlrE9n6ERPTZYYpaUCjl1Lu2WStKYI9ekGnnj2DoX2Zk4ZPNy8mhWvseAl7G9LScWyfilLuU_TuDpq2-TWNX4iQtRSYbINi25dTiWONgOXK8pHeO4KR_dZ4xOqsqgXzBW_qcFXbu8GaDVQHoBkonhV5y41-57RcAc8j4FeSrp4KkZnv6UuPD0fnXHbha1mvf_ia4FAA"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-primary via-transparent to-transparent"></div>
+<div class="absolute bottom-6 left-6">
+<p class="text-emerald-400 text-[10px] font-black tracking-[0.2em] uppercase mb-1">Encrypted Link</p>
+<h4 class="text-white text-lg font-bold">Node Hardware ID: 99x-ARCH-7</h4>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col gap-3">
+<button class="w-full bg-primary text-white font-bold py-4 rounded-md shadow-lg shadow-primary/20 hover:bg-slate-800 transition-all duration-300 active:scale-95 flex items-center justify-center gap-2" type="submit">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">save</span>
+                            SAVE CONFIGURATION
+                        </button>
+<button onclick="window.resetToDefaults()" class="w-full bg-surface-container-highest text-on-surface font-bold py-4 rounded-md hover:bg-surface-variant transition-all duration-300 active:scale-95 flex items-center justify-center gap-2" type="button">
+<span class="material-symbols-outlined text-sm">refresh</span>
+                            RESET TO FACTORY DEFAULTS
+                        </button>
+</div>
+</div>
+</form>
+</div>
+<!-- Spacer for BottomNavBar Mobile -->
+<div class="h-20 md:hidden"></div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center py-3 px-4 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl shadow-[0_-10px_30px_rgba(0,0,0,0.05)] rounded-t-xl">
+<a class="flex flex-col items-center text-slate-400 active:scale-90 transition-all" href="/dashboard">
+<span class="material-symbols-outlined">home</span>
+<span class="font-inter text-[10px] font-bold uppercase tracking-widest mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center text-slate-400 active:scale-90 transition-all" href="/route">
+<span class="material-symbols-outlined">map</span>
+<span class="font-inter text-[10px] font-bold uppercase tracking-widest mt-1">Routes</span>
+</a>
+<a class="flex flex-col items-center text-slate-400 active:scale-90 transition-all" href="/waste_stream">
+<span class="material-symbols-outlined">delete_outline</span>
+<span class="font-inter text-[10px] font-bold uppercase tracking-widest mt-1">Bins</span>
+</a>
+<a class="flex flex-col items-center text-slate-400 active:scale-90 transition-all" href="/analytics">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="font-inter text-[10px] font-bold uppercase tracking-widest mt-1">Data</span>
+</a>
+<a class="flex flex-col items-center text-emerald-600 scale-110 active:scale-90 transition-all" href="/settings">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-inter text-[10px] font-bold uppercase tracking-widest mt-1">Settings</span>
+</a>
+</nav>
+<script>
+    document.querySelector('form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const yellow = parseInt(document.getElementById('yellow_threshold').value);
+        const red = parseInt(document.getElementById('red_threshold').value);
+        const gas = parseInt(document.getElementById('dangerous_gas').value);
+        const interval = parseInt(document.getElementById('sensor_interval').value);
+        const cycles = parseInt(document.getElementById('retrain_cycles').value);
+        const trucks = parseInt(document.getElementById('num_trucks').value);
+        const capacity = parseInt(document.getElementById('truck_capacity').value);
+        
+        if (yellow >= red) {
+            alert('Yellow threshold must be less than Red threshold.');
+            return;
+        }
+
+        await fetch('/api/settings', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                threshold_yellow: yellow, 
+                threshold_red: red,
+                dangerous_gas: gas,
+                sensor_interval: interval,
+                retrain_cycles: cycles,
+                num_trucks: trucks,
+                truck_capacity: capacity
+            })
+        });
+        
+        alert('Configuration saved system-wide!');
+    });
+
+    // Load initial settings
+    window.addEventListener('load', async () => {
+        const res = await fetch('/api/settings');
+        const data = await res.json();
+        document.getElementById('yellow_threshold').value = data.threshold_yellow || 50;
+        document.getElementById('red_threshold').value = data.threshold_red || 80;
+        document.getElementById('dangerous_gas').value = data.dangerous_gas || 175;
+        document.getElementById('sensor_interval').value = data.sensor_interval || 4;
+        document.getElementById('retrain_cycles').value = data.retrain_cycles || 10;
+        document.getElementById('num_trucks').value = data.num_trucks || 3;
+        document.getElementById('truck_capacity').value = data.truck_capacity || 500;
+    });
+
+    window.resetToDefaults = async function() {
+        if(!confirm('Reset system settings and clear collection queue?')) return;
+        try {
+            await fetch('/api/reset', { method: 'POST' });
+            alert('System reset to factory defaults.');
+            window.location.reload();
+        } catch(e) { console.error(e); }
+    }
+</script>
+
+<div id="drawer-overlay" onclick="closeDrawer()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:49;"></div>
+<script>
+function openDrawer(){
+  var d=document.querySelector('aside.fixed');
+  if(d){d.style.transform='translateX(0)';}
+  document.getElementById('drawer-overlay').style.display='block';
+  document.body.style.overflow='hidden';
+}
+function closeDrawer(){
+  var d=document.querySelector('aside.fixed');
+  if(d){d.style.transform='translateX(-100%)';}
+  document.getElementById('drawer-overlay').style.display='none';
+  document.body.style.overflow='';
+}
+// on md+ always show
+if(window.innerWidth>=768){
+  var d=document.querySelector('aside.fixed');
+  if(d) d.style.transform='';
+}
+window.addEventListener('resize',function(){
+  if(window.innerWidth>=768){
+    var d=document.querySelector('aside.fixed');
+    if(d) d.style.transform='';
+    document.getElementById('drawer-overlay').style.display='none';
+    document.body.style.overflow='';
+  }
+});
+</script>
+</body></html>

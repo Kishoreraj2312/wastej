@@ -1,0 +1,9 @@
+{
+  "threshold_yellow": 50,
+  "threshold_red": 80,
+  "num_trucks": 4,
+  "truck_capacity": 800,
+  "dangerous_gas": 175,
+  "sensor_interval": 4,
+  "retrain_cycles": 10
+}

@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-container": "#c37b00",
+                    "on-tertiary": "#ffffff",
+                    "on-surface": "#181c1e",
+                    "surface-tint": "#54606b",
+                    "on-tertiary-fixed-variant": "#663e00",
+                    "error": "#ba1a1a",
+                    "surface-dim": "#d7dadc",
+                    "primary-container": "#1a252f",
+                    "on-secondary-fixed-variant": "#005228",
+                    "secondary": "#006d37",
+                    "tertiary-container": "#361f00",
+                    "secondary-fixed-dim": "#61de8a",
+                    "error-container": "#ffdad6",
+                    "outline": "#74777c",
+                    "tertiary-fixed-dim": "#ffb961",
+                    "background": "#f7fafc",
+                    "surface-container": "#ebeef0",
+                    "on-secondary-container": "#007239",
+                    "secondary-fixed": "#7efba4",
+                    "on-error": "#ffffff",
+                    "inverse-primary": "#bcc8d5",
+                    "outline-variant": "#c4c6cb",
+                    "on-surface-variant": "#44474b",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed": "#121d26",
+                    "inverse-on-surface": "#eef1f3",
+                    "inverse-surface": "#2d3133",
+                    "tertiary": "#190c00",
+                    "surface-variant": "#e0e3e5",
+                    "surface-container-highest": "#e0e3e5",
+                    "on-primary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-container": "#7bf8a1",
+                    "primary-fixed": "#d8e4f1",
+                    "surface-bright": "#f7fafc",
+                    "on-secondary": "#ffffff",
+                    "on-background": "#181c1e",
+                    "primary-fixed-dim": "#bcc8d5",
+                    "surface-container-low": "#f1f4f6",
+                    "tertiary-fixed": "#ffddb9",
+                    "on-primary-container": "#818c99",
+                    "surface": "#f7fafc",
+                    "primary": "#050f19",
+                    "on-secondary-fixed": "#00210c",
+                    "on-primary-fixed-variant": "#3d4853",
+                    "on-tertiary-fixed": "#2b1700",
+                    "surface-container-high": "#e5e9eb"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .glass-panel { background: rgba(224,227,229,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(196,198,203,0.15); }
+  .tonal-card { background-color: #ffffff; transition: background-color 0.3s ease; }
+  .tonal-card:hover { background-color: #f1f4f6; }
+  body { background-color: #f7fafc; color: #181c1e; font-family: 'Inter', sans-serif; min-height: 100dvh; }
+  #nav-drawer { transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); }
+  #drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.56); z-index: 49; backdrop-filter: blur(2px); }
+  #drawer-overlay.open { display: block; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .mobile-pb { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+</style>
+  </head>
+<body class="flex flex-col md:flex-row min-h-svh">
+
+<!-- Drawer Overlay -->
+<div id="drawer-overlay" onclick="closeDrawer()"></div>
+
+<!-- Nav Drawer -->
+<aside id="nav-drawer" class="w-72 h-full fixed left-0 top-0 bg-[#050f19] bg-gradient-to-b from-[#050f19] to-[#1a252f] shadow-2xl flex flex-col z-50 -translate-x-full md:translate-x-0">
+  <div class="px-7 py-8 border-b border-white/5">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-[#006d37] flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-white text-[18px]" style="font-variation-settings:'FILL' 1;">recycling</span>
+      </div>
+      <div>
+        <p class="text-sm font-bold tracking-wide text-white">Smart Waste</p>
+        <p class="text-[10px] font-semibold tracking-widest text-slate-500 uppercase">Intelligence</p>
+      </div>
+    </div>
+  </div>
+  <nav class="flex-1 px-4 py-5 space-y-1">
+    <a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors text-sm font-semibold" href="/dashboard">
+      <span class="material-symbols-outlined text-[20px]">dashboard</span> Overview
+    </a>
+    <a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors text-sm font-semibold" href="/route">
+      <span class="material-symbols-outlined text-[20px]">map</span> Fleet Map
+    </a>
+    <a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-white bg-[#006d37]/20 border-l-2 border-[#006d37] font-bold text-sm" href="/waste_stream">
+      <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1;">delete_sweep</span> Waste Stream
+    </a>
+    <a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors text-sm font-semibold" href="/analytics">
+      <span class="material-symbols-outlined text-[20px]">analytics</span> Analytics
+    </a>
+    <a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors text-sm font-semibold" href="/settings">
+      <span class="material-symbols-outlined text-[20px]">settings</span> Settings
+    </a>
+  </nav>
+  <div class="p-5 border-t border-white/5">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center">
+        <span class="material-symbols-outlined text-slate-400 text-[18px]" style="font-variation-settings:'FILL' 1;">person</span>
+      </div>
+      <div>
+        <p class="text-white text-xs font-bold">Lead Technician</p>
+        <p class="text-slate-500 text-[10px] uppercase tracking-wider">Industrial Waste Unit</p>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-72 flex flex-col overflow-y-auto pb-[calc(72px+env(safe-area-inset-bottom))] md:pb-0">
+  <!-- TopAppBar -->
+  <header class="bg-white/90 backdrop-blur-xl w-full h-14 md:h-16 sticky top-0 z-40 flex items-center justify-between px-4 md:px-8 border-b border-slate-200/60 shadow-[0_1px_0_rgba(0,0,0,0.04)]">
+    <div class="flex items-center gap-3">
+      <button onclick="openDrawer()" class="md:hidden p-2 rounded-lg hover:bg-slate-100 active:opacity-70">
+        <span class="material-symbols-outlined text-slate-900">menu</span>
+      </button>
+      <div>
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest hidden sm:block">Waste Stream</p>
+        <h1 class="text-sm md:text-base font-extrabold text-[#050f19] tracking-tight">Bin Telemetry</h1>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="hidden sm:flex items-center gap-1.5 bg-[#006d37]/8 border border-[#006d37]/20 px-3 py-1.5 rounded-full">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#006d37] animate-pulse"></span>
+        <span class="text-[10px] font-bold tracking-wider uppercase text-[#006d37]">Active Monitoring</span>
+      </div>
+      <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 cursor-pointer">
+        <span class="material-symbols-outlined text-slate-700 text-[18px]" style="font-variation-settings:'FILL' 1;">notifications</span>
+      </div>
+    </div>
+  </header>
+<!-- Content Area -->
+<div class="flex flex-col lg:flex-row flex-1">
+    <!-- Bin List Sidebar -->
+    <aside class="w-full lg:w-80 lg:h-[calc(100vh-64px)] bg-slate-50 border-b lg:border-b-0 lg:border-r border-slate-200/20 flex flex-col shrink-0 max-h-[280px] lg:max-h-none">
+        <div class="p-4 border-b border-slate-200/10">
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+                <input type="text" id="bin-search" placeholder="Search bins..." autocomplete="off" class="w-full bg-white dark:bg-slate-800 border-none rounded-lg py-2 pl-9 pr-4 text-xs font-medium focus:ring-2 focus:ring-primary transition-all">
+            </div>
+        </div>
+        <div class="flex-1 overflow-y-auto no-scrollbar" id="bin-list">
+            <!-- Populated via JS -->
+            <div class="p-8 text-center text-slate-500 animate-pulse">Loading sensor stream...</div>
+        </div>
+    </aside>
+
+    <!-- Main Detail Area -->
+    <div class="flex-1 p-4 md:p-8 space-y-6" id="detail-pane">
+        <div id="loading-overlay" class="fixed inset-0 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+            <span class="material-symbols-outlined animate-spin text-4xl text-primary">refresh</span>
+        </div>
+<!-- Page Header / Identity -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="label-sm bg-primary-container text-white px-2 py-0.5 rounded text-[10px] font-bold tracking-widest" id="bin-type">COMMERCIAL UNIT</span>
+<span class="text-on-surface-variant text-sm font-medium" id="bin-id-display">BIN ID: BIN038</span>
+</div>
+<h2 class="text-3xl font-black text-primary tracking-tighter" id="bin-zone">Sector 47 | Logistics Hub</h2>
+<p class="text-on-surface-variant text-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="location_on">location_on</span> 
+<span id="bin-address">Terminal A, Bay 12, South Perimeter Road</span>
+</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-4 py-2 rounded-full text-xs font-bold tracking-wider uppercase flex items-center gap-2" id="status-badge">
+<span class="w-2 h-2 rounded-full animate-pulse" id="status-dot"></span>
+<span id="status-text">CRITICAL STATUS</span>
+</span>
+<button onclick="window.dispatchTeam()" class="bg-primary text-white px-4 py-2 rounded-md text-xs font-bold uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[0.98] transition-transform">
+                        Dispatch Team
+                    </button>
+</div>
+</section>
+<!-- Main Asymmetric Bento Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Gauge Section (Left Large Column) -->
+<div class="lg:col-span-5 bg-surface-container-lowest rounded-xl p-8 flex flex-col items-center justify-center relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-error" id="gauge-bar"></div>
+<p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mb-8 self-start">Real-time Fill Capacity</p>
+<div class="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center">
+<!-- Background Circle -->
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-surface-container-high" cx="128" cy="128" fill="transparent" r="110" stroke="currentColor" stroke-width="14"></circle>
+<circle class="text-error" cx="128" cy="128" fill="transparent" r="110" stroke="currentColor" stroke-dasharray="691" stroke-dashoffset="691" stroke-width="14" id="gauge-circle"></circle>
+</svg>
+<div class="absolute flex flex-col items-center">
+<span class="text-5xl font-black text-primary tracking-tighter" id="fill-percent">0%</span>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest" id="fill-action">Scanning...</span>
+</div>
+</div>
+<div class="mt-8 w-full grid grid-cols-2 gap-4">
+<div class="p-3 bg-surface-container-low rounded-lg">
+<p class="text-[9px] uppercase tracking-widest text-on-surface-variant">Last Updated</p>
+<p class="text-lg font-bold text-primary" id="last-updated-display">-</p>
+</div>
+<div class="p-3 bg-surface-container-low rounded-lg">
+<p class="text-[9px] uppercase tracking-widest text-on-surface-variant">Priority Level</p>
+<p class="text-lg font-bold text-primary" id="priority-display">-</p>
+</div>
+</div>
+</div>
+<!-- Secondary Data (Right Grid) -->
+<div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+<!-- Sensor Cards -->
+<div class="bg-surface-container-lowest rounded-xl p-5 border-l-4 border-on-tertiary-container">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-on-tertiary-container" data-icon="gas_meter">gas_meter</span>
+<span class="text-[10px] font-bold text-on-tertiary-container bg-tertiary-fixed px-2 py-0.5 rounded uppercase">Warning</span>
+</div>
+<p class="text-3xl font-black text-primary tracking-tight">187.9 <span class="text-sm font-medium text-on-surface-variant">ppm</span></p>
+<p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mt-1">Hazardous Gas Level</p>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-5 border-l-4 border-error">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-error" data-icon="thermostat">thermostat</span>
+<span class="text-[10px] font-bold text-on-error-container bg-error-container px-2 py-0.5 rounded uppercase">Extreme</span>
+</div>
+<p class="text-3xl font-black text-primary tracking-tight">39.3 <span class="text-sm font-medium text-on-surface-variant">°C</span></p>
+<p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mt-1">Core Temperature</p>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-5 border-l-4 border-secondary">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-secondary" data-icon="humidity_mid">humidity_mid</span>
+<span class="text-[10px] font-bold text-on-secondary-container bg-secondary-container px-2 py-0.5 rounded uppercase">Stable</span>
+</div>
+<p class="text-3xl font-black text-primary tracking-tight">62.1 <span class="text-sm font-medium text-on-surface-variant">%</span></p>
+<p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mt-1">Internal Humidity</p>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-5 border-l-4 border-primary">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-primary" data-icon="weight">weight</span>
+<span class="text-[10px] font-bold text-on-surface-variant bg-surface-container px-2 py-0.5 rounded uppercase">Measured</span>
+</div>
+<p class="text-3xl font-black text-primary tracking-tight"><span id="weight-display">0</span> <span class="text-sm font-medium text-on-surface-variant">kg</span></p>
+<p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mt-1">Current Weight</p>
+</div>
+</div>
+</div>
+<!-- Detailed Status & History Row -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Status Analysis -->
+<div class="bg-surface-container-low rounded-xl p-6">
+<h3 class="text-sm font-bold uppercase tracking-widest text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="assignment_late">assignment_late</span>
+                        Issue Log
+                    </h3>
+<ul class="space-y-3" id="issue-log">
+    <!-- Dynamic Alerts -->
+</ul>
+</div>
+<!-- Historical Data Sparkline -->
+<div class="bg-surface-container-lowest rounded-xl p-6 border-t-4 border-primary">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-sm font-bold uppercase tracking-widest text-primary">Fill History</h3>
+<span class="text-[10px] text-on-surface-variant font-medium">LAST 10 READINGS</span>
+</div>
+<div class="h-32 flex items-end justify-between gap-1 mb-4 px-2" id="fill-history-bars">
+    <!-- Bars populated via JS -->
+</div>
+<div class="flex justify-between text-[9px] text-on-surface-variant font-bold tracking-tighter">
+<span>08:00 AM</span>
+<span>04:00 PM</span>
+<span>NOW</span>
+</div>
+</div>
+<!-- Sensor Health Panel -->
+<div class="bg-surface-container-lowest rounded-xl p-6 relative overflow-hidden">
+<img class="absolute inset-0 w-full h-full object-cover opacity-5 pointer-events-none" data-alt="microchip and sensor circuit board with blue glowing pathways and industrial technology aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYseuSiOO01ec5SR2axH5RQsLJ5HU3iG7tx27mIA-5lJwN1mTtNsBSovBZ6qY_gVnFsFmvw7lPD8zxLXqDYqYhiB2STQcQ_La0v2Stk64FHKzoPWUWTYT5DDJBTS5cc-kFBWN7VBuubiS3Pf5aOP8RSdBOFe6eXMPO8FRhuJBK_2RA5EXVCixpNHrqk7ExIsMeCIUkSfDdhLBGtt7frD1Eb7OM66kdZ31d5ehUnzbaxV0kwsyT7_v5NSpUPrMPnVfgFOC5rZ4gPw"/>
+<h3 class="text-sm font-bold uppercase tracking-widest text-primary mb-6">Hardware Integrity</h3>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<span class="text-xs font-medium text-on-surface-variant">LIDAR Depth Sensor</span>
+<span class="text-[10px] font-bold text-secondary bg-secondary-container px-2 rounded-full uppercase" id="lidar-status">Operational</span>
+</div>
+<div class="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+<div class="bg-secondary h-full" id="lidar-bar" style="width: 98%"></div>
+</div>
+<div class="flex items-center justify-between pt-2">
+<span class="text-xs font-medium text-on-surface-variant">Gas Probe V4</span>
+<span class="text-[10px] font-bold text-secondary bg-secondary-container px-2 rounded-full uppercase" id="gas-probe-status">Operational</span>
+</div>
+<div class="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+<div class="bg-secondary h-full" id="gas-probe-bar" style="width: 94%"></div>
+</div>
+<div class="flex items-center justify-between pt-2">
+<span class="text-xs font-medium text-on-surface-variant">Battery Level</span>
+<span class="text-[10px] font-bold text-on-tertiary-container bg-tertiary-fixed px-2 rounded-full uppercase">18% - LOW</span>
+</div>
+<div class="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+<div class="bg-on-tertiary-container h-full w-[18%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Detailed Location Map -->
+<section class="bg-surface-container-lowest rounded-xl overflow-hidden h-[260px] md:h-[400px] relative shadow-sm" id="map-container">
+    <div id="map" class="w-full h-full z-0"></div>
+<div class="absolute bottom-6 left-6 z-10 glass-panel p-4 rounded-lg flex items-center gap-4 bg-white/80 backdrop-blur-md border border-outline-variant/10">
+<div class="w-12 h-12 rounded bg-error flex items-center justify-center text-white">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">location_pin</span>
+</div>
+<div>
+<p class="text-xs font-bold text-primary" id="map-label-zone">Sector South</p>
+<p class="text-[10px] text-on-surface-variant" id="map-label-coords">GPS: -</p>
+</div>
+</div>
+</section>
+</div> <!-- End main detail area -->
+</div> <!-- End content area -->
+</main>
+
+<!-- BottomNavBar (Mobile) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pt-2 pb-[max(10px,env(safe-area-inset-bottom))] bg-white/95 backdrop-blur-lg border-t border-slate-200/60 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] rounded-t-2xl">
+  <a class="flex flex-col items-center justify-center text-slate-400 py-1.5 px-3 hover:text-[#006d37] active:scale-90 transition-all min-w-[48px]" href="/dashboard">
+    <span class="material-symbols-outlined text-[22px]">home</span>
+    <span class="text-[9px] font-bold tracking-wider uppercase mt-0.5">Home</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-slate-400 py-1.5 px-3 hover:text-[#006d37] active:scale-90 transition-all min-w-[48px]" href="/route">
+    <span class="material-symbols-outlined text-[22px]">map</span>
+    <span class="text-[9px] font-bold tracking-wider uppercase mt-0.5">Routes</span>
+  </a>
+  <a class="flex flex-col items-center justify-center bg-[#006d37] text-white rounded-xl py-1.5 px-4 active:scale-90 transition-all min-w-[48px]" href="/waste_stream">
+    <span class="material-symbols-outlined text-[22px]" style="font-variation-settings:'FILL' 1;">delete_sweep</span>
+    <span class="text-[9px] font-bold tracking-wider uppercase mt-0.5">Bins</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-slate-400 py-1.5 px-3 hover:text-[#006d37] active:scale-90 transition-all min-w-[48px]" href="/analytics">
+    <span class="material-symbols-outlined text-[22px]">bar_chart</span>
+    <span class="text-[9px] font-bold tracking-wider uppercase mt-0.5">Data</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-slate-400 py-1.5 px-3 hover:text-[#006d37] active:scale-90 transition-all min-w-[48px]" href="/settings">
+    <span class="material-symbols-outlined text-[22px]">settings</span>
+    <span class="text-[9px] font-bold tracking-wider uppercase mt-0.5">Config</span>
+  </a>
+</nav>
+
+<script>
+let allBins = [];
+let currentMap = null;
+
+async function loadBinList() {
+    try {
+        const res = await fetch('/api/bins');
+        allBins = await res.json();
+        renderBinList(allBins);
+    } catch (e) { console.error(e); }
+}
+
+function renderBinList(bins) {
+    const list = document.getElementById('bin-list');
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeId = urlParams.get('id');
+
+    list.innerHTML = bins.map(bin => {
+        const isCritical = bin.status === 'CRITICAL';
+        const isMedium   = bin.status === 'MEDIUM';
+        const barColor   = isCritical ? '#ba1a1a' : isMedium ? '#f59e0b' : '#006d37';
+        const dotColor   = isCritical ? 'background:#ba1a1a' : isMedium ? 'background:#f59e0b' : 'background:#006d37';
+        const isActive   = bin.bin_id === activeId || (!activeId && bin.bin_id === bins[0].bin_id);
+
+        // Capitalise bin_type nicely e.g. "residential" → "Residential"
+        const typeLabel  = bin.bin_type
+            ? bin.bin_type.charAt(0).toUpperCase() + bin.bin_type.slice(1)
+            : 'Unknown';
+        // Only show zone line if it's different from the type label and non-empty
+        const zoneLine   = bin.zone && bin.zone !== typeLabel
+            ? `<div class="text-[10px] text-slate-400 truncate">${bin.zone}</div>`
+            : '';
+
+        return `
+            <div onclick="switchBin('${bin.bin_id}')" class="p-4 border-b border-slate-200/5 cursor-pointer hover:bg-primary/5 transition-colors ${isActive ? 'bg-primary/10 border-l-4 border-primary' : ''}">
+                <div class="flex justify-between items-start mb-1">
+                    <span class="text-[10px] font-black tracking-widest text-slate-500">#${bin.bin_id}</span>
+                    <span class="w-2 h-2 rounded-full" style="${dotColor}"></span>
+                </div>
+                <div class="font-bold text-sm text-primary mb-0.5">${typeLabel}</div>
+                ${zoneLine}
+                <div class="flex items-center gap-2 mt-1.5">
+                    <div class="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full" style="width:${bin.fill_level}%; background:${barColor}; transition: width 0.4s ease;"></div>
+                    </div>
+                    <span class="text-[10px] font-bold" style="color:${barColor}">${bin.fill_level}%</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+
+function switchBin(id) {
+    const url = new URL(window.location);
+    url.searchParams.set('id', id);
+    window.history.pushState({}, '', url);
+    loadBinDetail(id);
+    renderBinList(allBins);
+}
+
+async function loadBinDetail(binId) {
+    document.getElementById('loading-overlay').classList.remove('hidden');
+    try {
+        const response = await fetch(`/api/bin/${binId}`);
+        const bin = await response.json();
+        
+        document.getElementById('bin-type').innerText = bin.bin_type.toUpperCase() + ' UNIT';
+        document.getElementById('bin-id-display').innerText = `BIN ID: ${bin.bin_id}`;
+        document.getElementById('bin-zone').innerText = bin.zone || `Sector Hub`;
+        document.getElementById('bin-address').innerText = `Lat: ${bin.latitude.toFixed(4)}, Lon: ${bin.longitude.toFixed(4)}`;
+        document.getElementById('fill-percent').innerText = `${bin.fill_level}%`;
+        
+        const circle = document.getElementById('gauge-circle');
+        const circumference = 2 * Math.PI * 110;
+        const offset = circumference - (bin.fill_level / 100) * circumference;
+        circle.style.strokeDashoffset = offset;
+        
+        if (bin.fill_level >= 80) {
+            circle.setAttribute('class', 'text-error');
+            document.getElementById('gauge-bar').className = 'absolute top-0 left-0 w-1 h-full bg-error';
+            document.getElementById('fill-action').innerText = 'Immediate Emptying';
+        } else if (bin.fill_level >= 50) {
+            circle.setAttribute('class', 'text-warning');
+            document.getElementById('gauge-bar').className = 'absolute top-0 left-0 w-1 h-full bg-warning';
+            document.getElementById('fill-action').innerText = 'Schedule Soon';
+        } else {
+            circle.setAttribute('class', 'text-secondary');
+            document.getElementById('gauge-bar').className = 'absolute top-0 left-0 w-1 h-full bg-secondary';
+            document.getElementById('fill-action').innerText = 'Optimal Capacity';
+        }
+
+        document.getElementById('last-updated-display').innerText = bin.last_updated || 'Active';
+        document.getElementById('priority-display').innerText = bin.priority_level;
+        document.getElementById('weight-display').innerText = bin.weight || '0';
+        
+        const badge = document.getElementById('status-badge');
+        const dot = document.getElementById('status-dot');
+        const text = document.getElementById('status-text');
+        
+        if (bin.status === 'CRITICAL') {
+            badge.className = 'bg-error-container text-on-error-container px-4 py-2 rounded-full text-xs font-bold tracking-wider uppercase flex items-center gap-2';
+            dot.className = 'w-2 h-2 rounded-full bg-error animate-pulse';
+            text.innerText = 'CRITICAL STATUS';
+        } else {
+            badge.className = 'bg-secondary-container text-on-secondary-container px-4 py-2 rounded-full text-xs font-bold tracking-wider uppercase flex items-center gap-2';
+            dot.className = 'w-2 h-2 rounded-full bg-secondary';
+            text.innerText = 'SYSTEM OPTIMAL';
+        }
+
+        const log = document.getElementById('issue-log');
+        let logHtml = '';
+        if (bin.status === 'CRITICAL') {
+            logHtml += `
+            <li class="flex items-start gap-3 bg-white dark:bg-slate-800 p-3 rounded-lg border border-error/10">
+                <span class="material-symbols-outlined text-error text-lg">warning</span>
+                <div>
+                    <p class="text-xs font-bold text-primary">Fill critical (${bin.fill_level}%)</p>
+                    <p class="text-[10px] text-on-surface-variant">Immediate dispatch recommended.</p>
+                </div>
+            </li>`;
+        }
+        log.innerHTML = logHtml || '<p class="text-xs text-on-surface-variant">No active issues detected.</p>';
+
+        if (currentMap) { currentMap.remove(); }
+        currentMap = L.map('map', { zoomControl: false }).setView([bin.latitude, bin.longitude], 16);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(currentMap);
+        L.circleMarker([bin.latitude, bin.longitude], {
+            radius: 12, fillColor: bin.status === 'CRITICAL' ? '#ba1a1a' : '#006d37', color: '#fff', weight: 3, opacity: 1, fillOpacity: 1
+        }).addTo(currentMap);
+        
+        document.getElementById('map-label-zone').innerText = bin.zone || 'Sector Hub';
+        document.getElementById('map-label-coords').innerText = `GPS: ${bin.latitude.toFixed(4)} N, ${bin.longitude.toFixed(4)} E`;
+
+        // Fill History Bars
+        const historyContainer = document.getElementById('fill-history-bars');
+        const history = bin.history || [20, 30, 45, 60, 75, 80, 85, 90, 95, bin.fill_level];
+        historyContainer.innerHTML = history.slice(-10).map((h, i) => {
+            const isLast = i === history.length - 1;
+            const colorClass = h > 80 ? 'bg-error' : 'bg-primary';
+            const opacity = 0.1 + (i * 0.1);
+            return `<div class="w-full ${colorClass} rounded-t-sm" style="height: ${h}%; opacity: ${isLast ? 1 : opacity}"></div>`;
+        }).join('');
+
+        // Hardware Integrity (Semi-simulated based on sensor_ok)
+        const ok = bin.sensor_ok !== false;
+        const lidarVal = ok ? (95 + Math.random() * 5) : (30 + Math.random() * 20);
+        const gasVal = ok ? (90 + Math.random() * 10) : (40 + Math.random() * 30);
+        
+        document.getElementById('lidar-status').innerText = lidarVal > 80 ? 'Operational' : 'Degraded';
+        document.getElementById('lidar-bar').style.width = `${lidarVal}%`;
+        document.getElementById('lidar-bar').className = `h-full ${lidarVal > 80 ? 'bg-secondary' : 'bg-error'}`;
+        
+        document.getElementById('gas-probe-status').innerText = gasVal > 80 ? 'Operational' : 'Degraded';
+        document.getElementById('gas-probe-bar').style.width = `${gasVal}%`;
+        document.getElementById('gas-probe-bar').className = `h-full ${gasVal > 80 ? 'bg-secondary' : 'bg-error'}`;
+
+    } catch (e) { console.error(e); }
+    finally { document.getElementById('loading-overlay').classList.add('hidden'); }
+}
+
+document.getElementById('bin-search').addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
+    const filtered = allBins.filter(b =>
+        b.bin_id.toLowerCase().includes(q) ||
+        (b.bin_type && b.bin_type.toLowerCase().includes(q)) ||
+        (b.status && b.status.toLowerCase().includes(q))
+    );
+    renderBinList(filtered);
+});
+
+window.addEventListener('load', async () => {
+    await loadBinList();
+    const urlParams = new URLSearchParams(window.location.search);
+    const binId = urlParams.get('id') || (allBins.length > 0 ? allBins[0].bin_id : 'BIN001');
+    loadBinDetail(binId);
+
+    // Auto-refresh every 15s to stay in sync with collections from other pages
+    setInterval(async () => {
+        await loadBinList();
+        const activeId = new URLSearchParams(window.location.search).get('id')
+            || (allBins.length > 0 ? allBins[0].bin_id : null);
+        if (activeId) loadBinDetail(activeId);
+    }, 15000);
+});
+
+window.dispatchTeam = function() {
+    alert('Mission Dispatched: Fleet Unit notified for immediate collection.');
+}
+</script>
+
+<script>
+function openDrawer(){
+  document.getElementById('nav-drawer').classList.remove('-translate-x-full');
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeDrawer(){
+  document.getElementById('nav-drawer').classList.add('-translate-x-full');
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+window.addEventListener('resize',function(){
+  if(window.innerWidth>=768)closeDrawer();
+});
+</script>
+</body></html>

@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport" />
+  <title>Fleet Map — Smart Waste Intelligence</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-surface": "#181c1e",
+            "error": "#ba1a1a",
+            "surface-container-lowest": "#ffffff",
+            "secondary-fixed-dim": "#61de8a",
+            "surface-tint": "#54606b",
+            "surface-bright": "#f7fafc",
+            "error-container": "#ffdad6",
+            "surface-container-low": "#f1f4f6",
+            "surface-dim": "#d7dadc",
+            "on-primary-fixed-variant": "#3d4853",
+            "secondary-fixed": "#7efba4",
+            "on-secondary-fixed": "#00210c",
+            "on-primary-container": "#818c99",
+            "primary": "#050f19",
+            "on-error": "#ffffff",
+            "tertiary-fixed": "#ffddb9",
+            "primary-fixed": "#d8e4f1",
+            "primary-fixed-dim": "#bcc8d5",
+            "on-surface-variant": "#44474b",
+            "on-secondary": "#ffffff",
+            "primary-container": "#1a252f",
+            "on-background": "#181c1e",
+            "outline-variant": "#c4c6cb",
+            "surface-container-high": "#e5e9eb",
+            "on-tertiary-container": "#c37b00",
+            "on-primary": "#ffffff",
+            "inverse-surface": "#2d3133",
+            "surface": "#f7fafc",
+            "inverse-on-surface": "#eef1f3",
+            "background": "#f7fafc",
+            "tertiary": "#190c00",
+            "outline": "#74777c",
+            "on-primary-fixed": "#121d26",
+            "inverse-primary": "#bcc8d5",
+            "secondary-container": "#7bf8a1",
+            "tertiary-container": "#361f00",
+            "on-secondary-container": "#007239",
+            "secondary": "#006d37",
+            "surface-container-highest": "#e0e3e5",
+            "on-error-container": "#93000a",
+            "on-tertiary": "#ffffff",
+            "surface-variant": "#e0e3e5",
+            "surface-container": "#ebeef0"
+          },
+          borderRadius: {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          fontFamily: {
+            "headline": ["Inter"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          }
+        },
+      },
+    }
+  </script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      line-height: 1;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── Leaflet tweaks ── */
+    .leaflet-container img {
+      max-width: none !important;
+      max-height: none !important;
+    }
+
+    .leaflet-container {
+      background: #f1f5f9;
+    }
+
+    .leaflet-control-attribution {
+      font-size: 9px;
+      opacity: 0.5;
+    }
+
+    .leaflet-popup-content-wrapper {
+      background: #ffffff;
+      color: #1e293b;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .leaflet-popup-tip {
+      background: #ffffff;
+    }
+
+    .leaflet-tooltip {
+      background: #ffffff;
+      color: #1e293b;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ── Animated route paths ── */
+    .route-path-animated {
+      stroke-dasharray: 12, 8;
+      animation: routeFlow 1.2s linear infinite;
+    }
+
+    @keyframes routeFlow {
+      from {
+        stroke-dashoffset: 0;
+      }
+
+      to {
+        stroke-dashoffset: 20;
+      }
+    }
+
+    /* ── Truck icon ── */
+    .truck-icon-wrap {
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease;
+      filter: drop-shadow(0 0 8px currentColor);
+    }
+
+    .truck-icon-wrap:hover {
+      transform: scale(1.2) !important;
+    }
+
+    /* ── HQ beacon ── */
+    @keyframes hqGlow {
+
+      0%,
+      100% {
+        filter: drop-shadow(0 0 6px #61de8a);
+      }
+
+      50% {
+        filter: drop-shadow(0 0 20px #61de8a);
+      }
+    }
+
+    /* ── Glassmorphism map HUD panels ── */
+    .glass-hud {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      color: #1e293b;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border-radius: 8px;
+    }
+
+    /* ── Route card (minimalist) ── */
+    .route-card {
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 6px;
+      transition: background 0.15s;
+      border-left: 3px solid transparent;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .route-card:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* ── Priority queue row ── */
+    .queue-row {
+      background: #fff;
+      border: 1px solid rgba(196, 198, 203, 0.2);
+      border-radius: 14px;
+      transition: all 0.25s ease;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .queue-row:hover {
+      box-shadow: 0 4px 20px rgba(5, 15, 25, 0.07);
+      transform: translateY(-1px);
+    }
+
+    /* ── Mobile bottom safe area padding ── */
+    .mobile-pb {
+      padding-bottom: calc(72px + env(safe-area-inset-bottom));
+    }
+
+    /* ── Map wrapper: pointer-events fix for mobile ── */
+    #map-wrapper {
+      touch-action: pan-x pan-y;
+    }
+
+    /* ── Mobile nav drawer ── */
+    #nav-drawer {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #drawer-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.56);
+      z-index: 49;
+      backdrop-filter: blur(2px);
+    }
+
+    #drawer-overlay.open {
+      display: block;
+    }
+
+    /* ── Stat pill ── */
+    .stat-pill {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stat-pill .label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #74777c;
+    }
+
+    .stat-pill .value {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      color: #181c1e;
+    }
+
+    .stat-pill .value.green {
+      color: #006d37;
+    }
+
+    /* ── Section divider ── */
+    .divider {
+      width: 1px;
+      height: 32px;
+      background: #c4c6cb;
+      opacity: 0.4;
+      align-self: center;
+    }
+  </style>
+</head>
+
+<body class="bg-surface text-on-surface min-h-screen">
+
+  <!-- ═══════════════════ DRAWER OVERLAY ═══════════════════ -->
+  <div id="drawer-overlay" onclick="closeDrawer()"></div>
+
+  <!-- ═══════════════════ SIDE NAV DRAWER ═══════════════════ -->
+  <aside id="nav-drawer"
+    class="w-72 h-full fixed left-0 top-0 bg-[#050f19] bg-gradient-to-b from-[#050f19] to-[#1a252f] shadow-2xl shadow-black/30 flex flex-col z-50 -translate-x-full md:translate-x-0">
+    <div class="px-7 py-8 flex flex-col gap-1 border-b border-white/5">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-[#006d37] flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-white text-[18px]"
+            style="font-variation-settings:'FILL' 1;">recycling</span>
+        </div>
+        <div>
+          <h1 class="text-sm font-bold tracking-wide text-white leading-tight">Smart Waste</h1>
+          <p class="text-[10px] font-semibold tracking-widest text-slate-500 uppercase">Intelligence</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 px-4 py-5 space-y-1">
+      <a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors text-sm font-semibold tracking-tight"
+        href="/dashboard">
+        <span class="material-symbols-outlined text-[20px]">dashboard</span> Overview
+      </a>
+      <a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-white bg-[#006d37]/20 border-l-2 border-[#006d37] font-bold text-sm tracking-tight"
+        href="/route">
+        <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1;">map</span> Fleet
+        Map
+      </a>
+      <a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors text-sm font-semibold tracking-tight"
+        href="/waste_stream">
+        <span class="material-symbols-outlined text-[20px]">delete_sweep</span> Waste Stream
+      </a>
+      <a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors text-sm font-semibold tracking-tight"
+        href="/analytics">
+        <span class="material-symbols-outlined text-[20px]">analytics</span> Analytics
+      </a>
+      <a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors text-sm font-semibold tracking-tight"
+        href="/settings">
+        <span class="material-symbols-outlined text-[20px]">settings</span> Settings
+      </a>
+    </nav>
+    <div class="p-5 border-t border-white/5">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center">
+          <span class="material-symbols-outlined text-slate-400 text-[18px]"
+            style="font-variation-settings:'FILL' 1;">person</span>
+        </div>
+        <div>
+          <p class="text-white text-xs font-bold">Lead Technician</p>
+          <p class="text-slate-500 text-[10px] uppercase tracking-wider">Industrial Waste Unit</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════ MAIN CANVAS ═══════════════════ -->
+  <main class="md:ml-72 min-h-screen flex flex-col">
+
+    <!-- TOP BAR -->
+    <header
+      class="w-full sticky top-0 z-40 bg-white/90 backdrop-blur-xl flex items-center justify-between px-4 md:px-8 h-14 md:h-16 border-b border-slate-200/60 shadow-[0_1px_0_rgba(0,0,0,0.04)]">
+      <div class="flex items-center gap-3">
+        <button onclick="openDrawer()"
+          class="md:hidden text-[#050f19] hover:bg-slate-100 rounded-full p-2 active:opacity-60 transition-all"
+          aria-label="Open menu">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <div>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest hidden sm:block">Fleet Map</p>
+          <h2 class="text-sm md:text-base font-extrabold text-[#050f19] tracking-tight">Tactical Route View</h2>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 md:gap-3">
+        <div
+          class="hidden lg:flex items-center gap-1.5 bg-[#006d37]/8 border border-[#006d37]/20 px-3 py-1.5 rounded-full">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#006d37] animate-pulse"></span>
+          <span class="text-[10px] font-bold tracking-wider uppercase text-[#006d37]">Route Engine Active</span>
+        </div>
+        <button onclick="window.optimizeRoutes()"
+          class="flex items-center gap-1.5 bg-[#050f19] text-white px-3 py-2 md:px-4 rounded-lg text-[10px] md:text-[11px] font-bold uppercase tracking-widest hover:bg-[#1a252f] transition-all active:scale-95 shadow">
+          <span class="material-symbols-outlined text-[16px]">bolt</span>
+          <span class="hidden sm:inline">Recalculate</span>
+        </button>
+        <button class="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full active:opacity-60 transition-all">
+          <span class="material-symbols-outlined text-[20px]">notifications_active</span>
+          <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- PAGE CONTENT -->
+    <div class="flex-1 p-4 md:p-8 space-y-6 md:space-y-8 max-w-7xl mx-auto w-full mobile-pb md:pb-10">
+
+      <!-- STATS ROW -->
+      <div class="flex items-center gap-4 md:gap-6 flex-wrap">
+        <div class="stat-pill">
+          <span class="label">Path Distance</span>
+          <span class="value" id="route-distance">— km</span>
+        </div>
+        <div class="divider hidden sm:block"></div>
+        <div class="stat-pill">
+          <span class="label">Estimated Time</span>
+          <span class="value green" id="route-time">— hrs</span>
+        </div>
+        <div class="divider hidden sm:block"></div>
+        <div class="stat-pill">
+          <span class="label">Nodes to Visit</span>
+          <span class="value" id="critical-count">—</span>
+        </div>
+      </div>
+
+      <!-- MAP + SIDEBAR GRID -->
+      <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- MAP WRAPPER — z-index carefully managed so overlays don't eat touch events -->
+        <div id="map-wrapper"
+          class="lg:col-span-8 relative rounded-2xl overflow-hidden shadow-xl border border-slate-200"
+          style="height:420px; z-index:1;">
+
+          <!-- Leaflet map fills the wrapper -->
+          <div id="routemap" class="absolute inset-0 h-full w-full" style="z-index:0;"></div>
+
+          <!-- Filter bar — top left -->
+          <div class="absolute top-3 left-3 z-[10] flex gap-1.5" style="pointer-events:auto;">
+            <div class="bg-white shadow rounded-lg px-2 py-1.5 flex items-center gap-1 border border-slate-200">
+              <select id="status-filter" onchange="window.loadRouteData()"
+                class="bg-transparent border-none text-[10px] font-bold uppercase tracking-wider text-slate-600 focus:ring-0 cursor-pointer appearance-none pr-4">
+                <option value="ALL">All Bins</option>
+                <option value="CRITICAL">Critical</option>
+                <option value="MEDIUM">Medium</option>
+              </select>
+              <div class="w-px h-4 bg-slate-200"></div>
+              <select id="vehicle-filter" onchange="window.loadRouteData()"
+                class="bg-transparent border-none text-[10px] font-bold uppercase tracking-wider text-slate-600 focus:ring-0 cursor-pointer appearance-none pr-4">
+                <option value="ALL">All Vehicles</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Zoom controls — top right -->
+          <div class="absolute top-3 right-3 z-[10] flex flex-col gap-1" style="pointer-events:auto;">
+            <button data-action="zoom-in"
+              class="w-8 h-8 rounded-lg bg-white shadow flex items-center justify-center text-slate-700 hover:bg-slate-50 active:scale-90 transition-all border border-slate-200">
+              <span class="material-symbols-outlined text-base">add</span>
+            </button>
+            <button data-action="zoom-out"
+              class="w-8 h-8 rounded-lg bg-white shadow flex items-center justify-center text-slate-700 hover:bg-slate-50 active:scale-90 transition-all border border-slate-200">
+              <span class="material-symbols-outlined text-base">remove</span>
+            </button>
+            <button data-action="center"
+              class="w-8 h-8 rounded-lg bg-[#006d37] shadow flex items-center justify-center text-white hover:brightness-110 active:scale-90 transition-all mt-1">
+              <span class="material-symbols-outlined text-base">my_location</span>
+            </button>
+          </div>
+
+          <!-- Fullscreen button — bottom right -->
+          <div class="absolute bottom-3 right-3 z-[10]" style="pointer-events:auto;">
+            <button id="fullscreen-btn" onclick="window.toggleFullscreen()"
+              class="bg-white shadow w-8 h-8 rounded-lg flex items-center justify-center text-slate-700 hover:bg-slate-50 active:scale-90 transition-all border border-slate-200">
+              <span class="material-symbols-outlined text-base">fullscreen</span>
+            </button>
+          </div>
+
+          <!-- Route engine badge — bottom left -->
+          <div class="absolute bottom-3 left-3 z-[10]" style="pointer-events:auto;">
+            <div class="bg-white rounded-lg shadow px-3 py-2 border border-slate-200 flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#006d37] animate-pulse shrink-0"></span>
+              <span class="text-[9px] font-bold tracking-widest uppercase text-[#006d37]">OSRM + OR-Tools</span>
+              <button onclick="window.optimizeRoutes()"
+                class="ml-1 bg-[#050f19] text-white text-[9px] font-bold px-2 py-1 rounded font-bold uppercase tracking-wide hover:opacity-80 active:scale-90 transition-all">
+                Re-Optimize
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT SIDEBAR -->
+        <div class="lg:col-span-4 flex flex-col gap-4">
+
+          <!-- Active Routes Card (minimalist) -->
+          <div class="bg-[#050f19] text-white rounded-2xl p-5 flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-[9px] font-bold tracking-[0.18em] text-[#61de8a]/70 uppercase mb-0.5">Fleet Deployment
+                </p>
+                <h4 class="text-base font-bold tracking-tight">Active Routes</h4>
+              </div>
+              <button onclick="window.optimizeRoutes()"
+                class="flex items-center gap-1 bg-[#006d37] text-white text-[9px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-lg hover:brightness-110 active:scale-95 transition-all">
+                <span class="material-symbols-outlined text-sm">bolt</span> Optimize
+              </button>
+            </div>
+            <!-- Routes list -->
+            <div class="space-y-1 flex-1 no-scrollbar overflow-y-auto" id="active-routes-list"
+              style="max-height:180px;">
+              <div class="text-xs text-slate-500">Loading routes...</div>
+            </div>
+            <!-- Footer -->
+            <div class="pt-3 border-t border-white/8 flex items-center gap-2">
+              <span class="material-symbols-outlined text-[#61de8a] text-base">route</span>
+              <span class="text-[10px] text-slate-500 leading-tight">Opportunistic collection enabled for medium
+                nodes.</span>
+            </div>
+          </div>
+
+          <!-- Upcoming Alert card -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+            <p class="text-[9px] font-bold tracking-[0.18em] uppercase text-slate-400 mb-3">Upcoming Alert</p>
+            <div class="flex items-start gap-3">
+              <div
+                class="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-amber-500 text-[18px]">warning</span>
+              </div>
+              <div>
+                <p class="text-sm font-bold text-slate-800">Traffic Congestion</p>
+                <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">High volume detected at Dock 4. Rerouting +2
+                  km.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PRIORITY QUEUE SECTION -->
+      <section>
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <h4 class="text-lg font-bold tracking-tight text-on-surface">Priority Queue</h4>
+            <span
+              class="bg-[#006d37]/10 text-[#006d37] text-[9px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-widest">Live</span>
+          </div>
+          <div class="flex gap-1">
+            <button class="p-2 text-slate-400 hover:bg-slate-100 rounded-lg transition-all">
+              <span class="material-symbols-outlined text-[18px]">filter_list</span>
+            </button>
+            <button class="p-2 text-slate-400 hover:bg-slate-100 rounded-lg transition-all">
+              <span class="material-symbols-outlined text-[18px]">sort</span>
+            </button>
+          </div>
+        </div>
+        <div class="space-y-3" id="priority-queue">
+          <!-- Filled by JS -->
+        </div>
+      </section>
+
+    </div><!-- /page content -->
+  </main>
+
+  <!-- ═══════════════════ MOBILE BOTTOM NAV ═══════════════════ -->
+  <nav
+    class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pt-2 pb-[max(10px,env(safe-area-inset-bottom))] bg-white/95 backdrop-blur-lg border-t border-slate-200/60 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] rounded-t-2xl">
+    <a class="flex flex-col items-center justify-center text-slate-400 py-1.5 px-3 hover:text-[#006d37] active:scale-90 transition-all min-w-[48px]"
+      href="/dashboard">
+      <span class="material-symbols-outlined text-[22px]">home</span>
+      <span class="text-[9px] font-bold tracking-wider uppercase mt-0.5">Home</span>
+    </a>
+    <a class="flex flex-col items-center justify-center bg-[#006d37] text-white rounded-xl py-1.5 px-4 active:scale-90 transition-all min-w-[48px]"
+      href="/route">
+      <span class="material-symbols-outlined text-[22px]" style="font-variation-settings:'FILL' 1;">explore</span>
+      <span class="text-[9px] font-bold tracking-wider uppercase mt-0.5">Map</span>
+    </a>
+    <a class="flex flex-col items-center justify-center text-slate-400 py-1.5 px-3 hover:text-[#006d37] active:scale-90 transition-all min-w-[48px]"
+      href="/waste_stream">
+      <span class="material-symbols-outlined text-[22px]">delete_sweep</span>
+      <span class="text-[9px] font-bold tracking-wider uppercase mt-0.5">Bins</span>
+    </a>
+    <a class="flex flex-col items-center justify-center text-slate-400 py-1.5 px-3 hover:text-[#006d37] active:scale-90 transition-all min-w-[48px]"
+      href="/analytics">
+      <span class="material-symbols-outlined text-[22px]">bar_chart</span>
+      <span class="text-[9px] font-bold tracking-wider uppercase mt-0.5">Data</span>
+    </a>
+    <a class="flex flex-col items-center justify-center text-slate-400 py-1.5 px-3 hover:text-[#006d37] active:scale-90 transition-all min-w-[48px]"
+      href="/settings">
+      <span class="material-symbols-outlined text-[22px]">settings</span>
+      <span class="text-[9px] font-bold tracking-wider uppercase mt-0.5">Config</span>
+    </a>
+  </nav>
+
+  <!-- ═══════════════════ SCRIPTS ═══════════════════ -->
+  <script>
+    // ─── Drawer ──────────────────────────────────────────
+    function openDrawer() {
+      document.getElementById('nav-drawer').classList.remove('-translate-x-full');
+      document.getElementById('drawer-overlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDrawer() {
+      document.getElementById('nav-drawer').classList.add('-translate-x-full');
+      document.getElementById('drawer-overlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    window.addEventListener('resize', function () {
+      if (window.innerWidth >= 768) { closeDrawer(); }
+    });
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // ─── MAP INIT ────────────────────────────────────────────────────────────
+      const map = L.map('routemap', {
+        zoomControl: false,
+        // Proper touch scroll settings — critical for mobile!
+        touchZoom: true,
+        scrollWheelZoom: true,
+        dragging: true,
+        tap: true
+      }).setView([11.0168, 76.9558], 13);
+
+      L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
+        attribution: '© Stadia Maps © OpenStreetMap',
+        maxZoom: 20
+      }).addTo(map);
+
+      const routeLayerGroup = L.layerGroup().addTo(map);
+      const truckLayerGroup = L.layerGroup().addTo(map);
+      let truckMarkers = [];
+      let currentData = null;
+
+      // Invalidate map size once fonts/layout settle (critical for mobile render)
+      setTimeout(() => map.invalidateSize(), 300);
+
+      // ─── MAP CONTROLS ──────────────────────────────────────────────────────
+      document.querySelector('[data-action="zoom-in"]')?.addEventListener('click', () => map.zoomIn());
+      document.querySelector('[data-action="zoom-out"]')?.addEventListener('click', () => map.zoomOut());
+      document.querySelector('[data-action="center"]')?.addEventListener('click', () => map.setView([11.0168, 76.9558], 13));
+
+      // ─── FULLSCREEN ──────────────────────────────────────────────────────────
+      window.toggleFullscreen = function () {
+        const mapContainer = document.getElementById('map-wrapper');
+        const icon = document.querySelector('#fullscreen-btn .material-symbols-outlined');
+        if (!document.fullscreenElement) {
+          mapContainer.requestFullscreen().catch(err => console.error(err));
+          if (icon) icon.innerText = 'fullscreen_exit';
+        } else {
+          document.exitFullscreen();
+          if (icon) icon.innerText = 'fullscreen';
+        }
+      };
+      document.addEventListener('fullscreenchange', () => {
+        const icon = document.querySelector('#fullscreen-btn .material-symbols-outlined');
+        if (!document.fullscreenElement && icon) icon.innerText = 'fullscreen';
+        // Reflow map after fullscreen toggle
+        setTimeout(() => map.invalidateSize(), 200);
+      });
+
+      // ─── HELPERS ──────────────────────────────────────────────────────────────
+      function bearing(a, b) {
+        const toRad = d => d * Math.PI / 180;
+        const toDeg = r => r * 180 / Math.PI;
+        const dLon = toRad(b[1] - a[1]);
+        const lat1 = toRad(a[0]), lat2 = toRad(b[0]);
+        const y = Math.sin(dLon) * Math.cos(lat2);
+        const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+        return (toDeg(Math.atan2(y, x)) + 360) % 360;
+      }
+
+      // ─── ICON FACTORIES ────────────────────────────────────────────────────────
+      const createTruckIcon = (color, angle = 0, label = '') => L.divIcon({
+        className: '',
+        html: `<div class="truck-icon-wrap" style="color:${color}; transform:rotate(${angle}deg); width:48px; height:48px; position:relative;">
+        <svg viewBox="0 0 52 52" width="48" height="48" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="26" cy="26" r="24" fill="${color}" fill-opacity="0.10"/>
+          <circle cx="26" cy="26" r="24" fill="none" stroke="${color}" stroke-width="1.5" stroke-opacity="0.35" stroke-dasharray="3,3">
+            <animateTransform attributeName="transform" type="rotate" from="0 26 26" to="360 26 26" dur="8s" repeatCount="indefinite"/>
+          </circle>
+          <rect x="10" y="15" width="32" height="22" rx="6" fill="rgba(5,15,25,0.92)" stroke="${color}" stroke-width="1.5"/>
+          <rect x="12" y="18" width="18" height="16" rx="3" fill="${color}" fill-opacity="0.2"/>
+          <rect x="30" y="20" width="10" height="12" rx="3" fill="${color}" fill-opacity="0.35" stroke="${color}" stroke-width="0.8"/>
+          <rect x="32" y="22" width="6" height="5" rx="1.5" fill="rgba(255,255,255,0.7)"/>
+          <circle cx="41" cy="30" r="1.5" fill="#fbbf24"/>
+          <circle cx="17" cy="38" r="3.5" fill="#0f172a" stroke="${color}" stroke-width="1.5"/>
+          <circle cx="28" cy="38" r="3.5" fill="#0f172a" stroke="${color}" stroke-width="1.5"/>
+          <circle cx="37" cy="38" r="3" fill="#0f172a" stroke="${color}" stroke-width="1.5"/>
+          <path d="M26 5 L22 11 L26 9 L30 11 Z" fill="${color}" fill-opacity="0.9"/>
+        </svg>
+        ${label ? `<div style="position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);background:${color};color:#fff;font-size:8px;font-weight:900;padding:1px 6px;border-radius:5px;white-space:nowrap;">${label}</div>` : ''}
+    </div>`,
+        iconSize: [48, 48],
+        iconAnchor: [24, 24]
+      });
+
+      const createBinIcon = (color, seqNum, bin) => {
+        const binColor = bin.status === 'CRITICAL' ? '#dc2626' : bin.status === 'MEDIUM' ? '#ea580c' : '#059669';
+        return L.divIcon({
+          className: '',
+          html: `<div style="position:relative; width:28px; height:36px; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.18));">
+          <svg viewBox="0 0 30 38" width="28" height="36" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 37 C15 37 1 24 1 13 C1 6 7.3 1 15 1 C22.7 1 29 6 29 13 C29 24 15 37 15 37Z" fill="${binColor}" stroke="white" stroke-width="1.5"/>
+            <circle cx="15" cy="13" r="8" fill="white"/>
+            <text x="15" y="17" text-anchor="middle" fill="${binColor}" font-size="10" font-weight="900" font-family="Inter,sans-serif">${seqNum}</text>
+          </svg>
+          ${bin.is_predictive ? `<div style="position:absolute;top:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:#f59e0b;border:1.5px solid white;"></div>` : ''}
+      </div>`,
+          iconSize: [28, 36],
+          iconAnchor: [14, 36],
+          popupAnchor: [0, -34]
+        });
+      };
+
+      const hqIcon = L.divIcon({
+        className: '',
+        html: `<div style="width:38px;height:38px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
+        <svg viewBox="0 0 40 40" width="38" height="38" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="20" cy="20" r="18" fill="#059669" stroke="white" stroke-width="2"/>
+          <path d="M12 28 L12 16 L20 10 L28 16 L28 28 Z" fill="white" fill-opacity="0.9"/>
+          <rect x="18" y="22" width="4" height="6" fill="#059669"/>
+        </svg>
+        <div style="position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);background:#059669;color:white;font-size:7px;font-weight:900;padding:1px 4px;border-radius:3px;border:1px solid white;">HQ</div>
+    </div>`,
+        iconSize: [38, 38],
+        iconAnchor: [19, 19]
+      });
+
+      // ─── ACTIVE ROUTES SIDEBAR (minimalist) ────────────────────────────────────
+      function buildActiveRoutesHtml(routes, colors) {
+        if (!routes || routes.length === 0) return '<div class="text-xs text-slate-500">No routes.</div>';
+        return routes.map((r, i) => {
+          const color = colors[i % colors.length];
+          const bins = (r.bins || []).filter(b => b.bin_id !== 'HQ');
+          return `
+      <div class="route-card" style="border-left-color:${color};">
+        <div class="flex items-center gap-2">
+          <div style="width:8px;height:8px;border-radius:50%;background:${color};box-shadow:0 0 8px ${color};flex-shrink:0;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="text-[11px] font-bold text-white truncate">Truck ${r.vehicle_id}</div>
+            <div class="text-[9px] text-slate-500 mt-0.5">${r.distance_km} km · ${bins.length} stops · ${r.estimated_hours}h</div>
+          </div>
+          <div class="font-mono text-[10px] font-bold shrink-0" style="color:${color};">${r.estimated_hours}h</div>
+        </div>
+        <div class="mt-2 h-0.5 rounded-full bg-white/8 overflow-hidden">
+          <div style="height:100%;width:${Math.min(bins.length * 8, 100)}%;background:${color};border-radius:2px;"></div>
+        </div>
+      </div>`;
+        }).join('');
+      }
+
+      // ─── MAIN LOAD ────────────────────────────────────────────────────────────
+      window.loadRouteData = async function () {
+        const data = await (await fetch('/api/routes/latest?t=' + Date.now())).json();
+        currentData = data;
+        routeLayerGroup.clearLayers();
+        truckLayerGroup.clearLayers();
+        truckMarkers = [];
+
+        if (!data.routes || data.routes.length === 0) {
+          document.getElementById('route-time').innerText = '0 hrs';
+          document.getElementById('route-distance').innerText = '0 km';
+          document.getElementById('critical-count').innerText = '0';
+          document.getElementById('priority-queue').innerHTML = "<div class='py-8 text-center text-slate-400 text-sm'>No active routes. Click Recalculate.</div>";
+          document.getElementById('active-routes-list').innerHTML = "<div class='text-xs text-slate-500'>No routes.</div>";
+          return;
+        }
+
+        const colors = ['#3b82f6', '#f97316', '#10b981', '#a855f7', '#ec4899', '#ef4444', '#f59e0b', '#06b6d4'];
+
+        // Vehicle filter: populate once
+        const vFilter = document.getElementById('vehicle-filter');
+        if (vFilter && vFilter.options.length <= 1) {
+          data.routes.forEach(r => {
+            const opt = document.createElement('option');
+            opt.value = r.vehicle_id;
+            opt.innerText = 'Vehicle ' + r.vehicle_id;
+            vFilter.appendChild(opt);
+          });
+        }
+
+        const selectedVehicle = document.getElementById('vehicle-filter')?.value || 'ALL';
+        const selectedStatus = document.getElementById('status-filter')?.value || 'ALL';
+
+        let queueHtml = '', allLatLngs = [];
+        let hqRendered = false;
+
+        data.routes.forEach((routeData, rIndex) => {
+          const isVehicleMatch = selectedVehicle === 'ALL' || String(routeData.vehicle_id) === String(selectedVehicle);
+          const color = colors[rIndex % colors.length];
+          const routeBins = (routeData.bins || []).filter(b => b.bin_id !== 'HQ');
+
+          // Route polyline
+          if (isVehicleMatch && routeData.path_geometry && routeData.path_geometry.length > 0) {
+            L.polyline(routeData.path_geometry, {
+              color, weight: 4, opacity: 0.8, lineJoin: 'round', lineCap: 'round'
+            }).addTo(routeLayerGroup);
+            allLatLngs.push(...routeData.path_geometry);
+          }
+
+          // Bin markers
+          (routeData.bins || []).forEach((bin, i) => {
+            const isStatusMatch = selectedStatus === 'ALL' || bin.status === selectedStatus;
+            const shouldShowMarker = isVehicleMatch && (bin.bin_id === 'HQ' || isStatusMatch);
+
+            if (shouldShowMarker && bin.bin_id === 'HQ' && !hqRendered) {
+              L.marker([bin.latitude, bin.longitude], { icon: hqIcon })
+                .addTo(routeLayerGroup)
+                .bindTooltip('<b>🏭 Depot HQ</b><br>Collection base', { direction: 'top' });
+              hqRendered = true;
+            } else if (shouldShowMarker && bin.bin_id !== 'HQ') {
+              const seqNum = i;
+              const binC = bin.status === 'CRITICAL' ? '#ef4444' : bin.status === 'MEDIUM' ? '#f97316' : color;
+              L.marker([bin.latitude, bin.longitude], { icon: createBinIcon(binC, seqNum, bin) })
+                .addTo(routeLayerGroup)
+                .bindPopup(`<div style="min-width:170px;">
+              <div style="font-weight:900;font-size:13px;margin-bottom:6px;color:#1e293b;">Node #${bin.bin_id}</div>
+              <div style="font-size:10px;color:#64748b;margin-bottom:3px;">Fill: <b style="color:${binC}">${bin.fill_level}%</b></div>
+              <div style="font-size:10px;color:#64748b;margin-bottom:3px;">Status: <b style="color:${binC}">${bin.status}</b></div>
+              ${bin.is_predictive ? '<div style="font-size:10px;color:#f59e0b;font-weight:700;">⚡ Predictive Pickup</div>' : ''}
+              <button onclick="collectBin('${bin.bin_id}')" style="margin-top:8px;width:100%;background:#006d37;color:white;border:none;padding:6px;border-radius:7px;font-size:10px;font-weight:900;letter-spacing:0.06em;cursor:pointer;text-transform:uppercase;">✓ Mark Collected</button>
+            </div>`, { maxWidth: 210 })
+                .bindTooltip(`Stop #${seqNum} · ${bin.fill_level}%`, { direction: 'top' });
+            }
+          });
+
+          // Priority queue rows
+          routeBins.forEach((bin, index) => {
+            const eta = (index + 1) * 15;
+            const binC = bin.status === 'CRITICAL' ? '#ef4444' : bin.status === 'MEDIUM' ? '#f97316' : '#006d37';
+            queueHtml += `
+        <div id="queue-item-${bin.bin_id}" class="queue-row px-4 py-3.5 flex items-center gap-4">
+          <div class="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl" style="background:${color}"></div>
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0 ml-1.5" style="background:${color};">
+            T${rIndex + 1}
+          </div>
+          <div class="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3 items-center">
+            <div>
+              <span class="text-[8px] font-black uppercase text-slate-400 tracking-widest block">Node</span>
+              <p class="font-bold text-on-surface text-sm mt-0.5">#${bin.bin_id}
+                ${bin.is_predictive ? '<span style="font-size:8px;padding:1px 5px;border-radius:4px;background:#fef3c7;color:#92400e;font-weight:900;margin-left:3px;">AI</span>' : ''}
+              </p>
+            </div>
+            <div>
+              <span class="text-[8px] font-black uppercase text-slate-400 tracking-widest block">ETA</span>
+              <p class="font-bold text-[#006d37] text-sm mt-0.5 flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">schedule</span> ${eta}m
+              </p>
+            </div>
+            <div>
+              <span class="text-[8px] font-black uppercase text-slate-400 tracking-widest block">Fill</span>
+              <div class="flex items-center gap-2 mt-1">
+                <div class="h-1.5 flex-1 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full rounded-full" style="width:${bin.fill_level}%;background:${binC}"></div>
+                </div>
+                <span class="text-xs font-black mono" style="color:${binC}">${bin.fill_level}%</span>
+              </div>
+            </div>
+            <div class="flex justify-end">
+              <button onclick="collectBin('${bin.bin_id}')" class="bg-[#006d37] text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all flex items-center gap-1 shadow">
+                <span class="material-symbols-outlined text-sm">check_circle</span>
+                <span class="hidden sm:inline">Collect</span>
+              </button>
+            </div>
+          </div>
+        </div>`;
+          });
+        });
+
+        // Update sidebar
+        document.getElementById('active-routes-list').innerHTML = buildActiveRoutesHtml(data.routes, colors);
+        document.getElementById('route-time').innerText = data.avg_route_time_hrs ? data.avg_route_time_hrs + ' hrs' : '— hrs';
+        document.getElementById('route-distance').innerText = data.total_distance_km ? data.total_distance_km + ' km' : '— km';
+        document.getElementById('critical-count').innerText = data.total_bins_assigned || '—';
+        document.getElementById('priority-queue').innerHTML = queueHtml || '<div class="py-8 text-center text-slate-400">No bins in queue.</div>';
+
+        if (allLatLngs.length > 0) {
+          map.fitBounds(L.latLngBounds(allLatLngs), { padding: [50, 50] });
+        }
+      };
+
+      // ─── OPTIMIZE ──────────────────────────────────────────────────────────────
+      window.optimizeRoutes = async function () {
+        document.getElementById('priority-queue').innerHTML = `<div class='py-8 text-center text-slate-400 text-sm flex items-center justify-center gap-2'><span class='material-symbols-outlined animate-spin text-[#006d37]'>refresh</span> Executing VRP Optimization...</div>`;
+        await fetch('/api/route/optimize');
+        window.loadRouteData();
+      };
+
+      window.collectBin = async function (id) {
+        const el = document.getElementById(`queue-item-${id}`);
+        if (el) {
+          el.style.opacity = '0';
+          el.style.transform = 'translateX(16px)';
+          el.style.transition = 'all 0.3s ease';
+        }
+        await fetch(`/api/collect/${id}`, { method: 'POST' });
+        setTimeout(window.loadRouteData, 350);
+      };
+
+      window.loadRouteData();
+    });
+  </script>
+</body>
+
+</html>

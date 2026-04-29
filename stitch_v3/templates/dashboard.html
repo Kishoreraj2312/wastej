@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Smart Waste Intelligence - Live Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode:"class",
+  theme:{extend:{
+    colors:{
+      "on-surface":"#181c1e","error":"#ba1a1a","tertiary-fixed-dim":"#ffb961",
+      "surface-container-lowest":"#ffffff","secondary-fixed-dim":"#61de8a",
+      "surface-tint":"#54606b","surface-bright":"#f7fafc","on-tertiary-fixed":"#2b1700",
+      "error-container":"#ffdad6","surface-container-low":"#f1f4f6","surface-dim":"#d7dadc",
+      "on-primary-fixed-variant":"#3d4853","secondary-fixed":"#7efba4","on-secondary-fixed":"#00210c",
+      "on-primary-container":"#818c99","primary":"#050f19","on-error":"#ffffff",
+      "tertiary-fixed":"#ffddb9","primary-fixed":"#d8e4f1","primary-fixed-dim":"#bcc8d5",
+      "on-surface-variant":"#44474b","on-secondary":"#ffffff","primary-container":"#1a252f",
+      "on-background":"#181c1e","outline-variant":"#c4c6cb","surface-container-high":"#e5e9eb",
+      "on-tertiary-container":"#c37b00","on-primary":"#ffffff","inverse-surface":"#2d3133",
+      "surface":"#f7fafc","inverse-on-surface":"#eef1f3","background":"#f7fafc",
+      "tertiary":"#190c00","outline":"#74777c","on-primary-fixed":"#121d26",
+      "inverse-primary":"#bcc8d5","secondary-container":"#7bf8a1","tertiary-container":"#361f00",
+      "on-secondary-container":"#007239","secondary":"#006d37","surface-container-highest":"#e0e3e5",
+      "on-error-container":"#93000a","on-tertiary":"#ffffff","surface-variant":"#e0e3e5",
+      "surface-container":"#ebeef0","on-secondary-fixed-variant":"#005228","on-tertiary-fixed-variant":"#663e00"
+    },
+    borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},
+    fontFamily:{"headline":["Inter"],"body":["Inter"],"label":["Inter"]}
+  }}
+}
+window.optimizeFleet = async function(e) {
+  const btn = (e && e.currentTarget) || document.getElementById('btn-optimize');
+  if(!btn) return;
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">refresh</span><span class="hidden sm:inline"> Optimizing...</span>';
+  btn.disabled = true;
+  try {
+    await fetch('/api/route/optimize');
+    window.location.href = '/route';
+  } catch(err) {
+    btn.innerHTML = orig;
+    btn.disabled = false;
+    alert('Optimization failed. Check network connection.');
+  }
+};
+</script>
+<style>
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;}
+body{font-family:'Inter',sans-serif;}
+.leaflet-container img{max-width:none !important;max-height:none !important;}
+@keyframes pulse-red{
+  0%{box-shadow:0 0 0 0 rgba(186,26,26,0.7);}
+  70%{box-shadow:0 0 0 10px rgba(186,26,26,0);}
+  100%{box-shadow:0 0 0 0 rgba(186,26,26,0);}
+}
+.pulse-critical{animation:pulse-red 2s infinite;border-radius:50%;}
+/* Overlay for mobile drawer */
+#drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:49;backdrop-filter:blur(2px);}
+#drawer-overlay.open{display:block;}
+/* Mobile map full width */
+@media(max-width:768px){
+  .map-overlay-panel{display:none;}
+  #map{height:300px !important;}
+  #map-container{height:300px !important;}
+  .mobile-card-row{display:block !important;}
+}
+/* Hide desktop table on mobile, show cards */
+@media(max-width:768px){
+  .desktop-table{display:none !important;}
+  .mobile-bin-cards{display:block !important;}
+}
+@media(min-width:769px){
+  .mobile-bin-cards{display:none !important;}
+}
+/* Safe area for bottom nav */
+.mobile-pb{padding-bottom:calc(80px + env(safe-area-inset-bottom));}
+</style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen">
+
+<!-- Mobile Drawer Overlay -->
+<div id="drawer-overlay" onclick="closeDrawer()"></div>
+
+<!-- Navigation Drawer -->
+<aside id="nav-drawer" class="w-72 h-full fixed left-0 top-0 bg-[#050f19] bg-gradient-to-b from-[#050f19] to-[#1a252f] shadow-2xl shadow-black/20 flex flex-col z-50 transition-transform duration-300 -translate-x-full md:translate-x-0">
+  <div class="px-6 py-8 flex flex-col gap-1">
+    <span class="text-xl font-bold tracking-[0.05em] text-white">Smart Waste</span>
+    <span class="text-slate-400 text-[10px] uppercase font-semibold tracking-wide">Bin Monitoring</span>
+  </div>
+  <nav class="flex-1 px-4 space-y-2">
+    <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-white bg-[#006d37]/20 border-l-4 border-[#006d37] font-bold" href="/dashboard">
+      <span class="material-symbols-outlined">dashboard</span>
+      <span class="text-sm uppercase font-semibold">Overview</span>
+    </a>
+    <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-[#1a252f] transition-colors" href="/route">
+      <span class="material-symbols-outlined">map</span>
+      <span class="text-sm uppercase font-semibold">Fleet Map</span>
+    </a>
+    <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-[#1a252f] transition-colors" href="/waste_stream">
+      <span class="material-symbols-outlined">delete_sweep</span>
+      <span class="text-sm uppercase font-semibold">Waste Stream</span>
+    </a>
+    <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-[#1a252f] transition-colors" href="/analytics">
+      <span class="material-symbols-outlined">analytics</span>
+      <span class="text-sm uppercase font-semibold">Analytics</span>
+    </a>
+    <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-[#1a252f] transition-colors" href="/settings">
+      <span class="material-symbols-outlined">settings</span>
+      <span class="text-sm uppercase font-semibold">Settings</span>
+    </a>
+  </nav>
+  <div class="mt-auto p-6 border-t border-slate-800/50">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center">
+        <span class="material-symbols-outlined text-slate-400" style="font-variation-settings:'FILL' 1">person</span>
+      </div>
+      <div>
+        <p class="text-white text-xs font-bold tracking-tight">Lead Technician</p>
+        <p class="text-slate-500 text-[10px] uppercase tracking-wider">Industrial Waste Unit</p>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<main class="md:ml-72 flex-1 relative min-h-screen flex flex-col">
+  <!-- TopAppBar -->
+  <header class="w-full sticky top-0 z-40 bg-[#f7fafc]/90 backdrop-blur-xl flex items-center justify-between px-4 md:px-8 h-16 md:h-20 border-none shadow-sm">
+    <div class="flex items-center gap-3">
+      <button onclick="openDrawer()" class="md:hidden text-[#050f19] hover:bg-slate-200 rounded-full p-2 active:opacity-70" aria-label="Open menu">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      <h1 class="text-base md:text-lg font-bold text-[#050f19] tracking-tight">Smart Waste Intelligence</h1>
+    </div>
+    <div class="flex items-center gap-2 md:gap-4">
+      <button id="btn-optimize" onclick="window.optimizeFleet(event)" class="flex items-center gap-2 bg-[#050f19] text-white px-3 py-2 md:px-4 rounded-lg text-[10px] md:text-[11px] font-bold uppercase tracking-widest hover:bg-[#1a252f] transition-all active:scale-95 shadow-lg">
+        <span class="material-symbols-outlined text-[18px]">bolt</span>
+        <span class="hidden sm:inline">Optimize Fleet</span>
+      </button>
+      <button onclick="alert('System Alert: All sensors operational. No impending overflows detected.')" class="text-slate-500 hover:bg-slate-200 rounded-full p-2 active:opacity-70">
+        <span class="material-symbols-outlined">notifications_active</span>
+      </button>
+      <div class="hidden sm:block text-right">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">System Mode</p>
+        <p class="text-[10px] font-semibold text-secondary">Hybrid Intelligence</p>
+      </div>
+    </div>
+  </header>
+
+  <section class="p-4 md:p-8 space-y-6 md:space-y-8 flex-1 mobile-pb md:pb-8">
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+      <div class="bg-surface-container-lowest p-4 md:p-6 rounded-xl relative overflow-hidden">
+        <div class="absolute left-0 top-0 bottom-0 w-1 bg-secondary"></div>
+        <p class="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Total Bins</p>
+        <h2 class="text-3xl md:text-4xl font-bold text-on-surface tracking-tighter" id="kpi-total-bins">—</h2>
+        <p class="text-xs text-secondary font-medium mt-2 flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm">sensors</span> Active
+        </p>
+      </div>
+      <div class="bg-surface-container-lowest p-4 md:p-6 rounded-xl relative overflow-hidden">
+        <div class="absolute left-0 top-0 bottom-0 w-1 bg-error"></div>
+        <p class="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Critical Bins</p>
+        <h2 class="text-3xl md:text-4xl font-bold text-on-surface tracking-tighter" id="kpi-critical">—</h2>
+        <p class="text-xs text-error font-medium mt-2">Immediate action</p>
+      </div>
+      <a href="/route" class="bg-surface-container-lowest p-4 md:p-6 rounded-xl relative overflow-hidden block hover:bg-surface-container-low transition-colors col-span-2 md:col-span-1">
+        <div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Active Routes</p>
+            <h2 class="text-3xl md:text-4xl font-bold text-on-surface tracking-tighter" id="kpi-routes">—</h2>
+          </div>
+          <span class="text-[10px] font-bold bg-surface-container-high px-2 py-1 rounded text-on-surface-variant" id="kpi-last-opt">—</span>
+        </div>
+        <div class="mt-3 flex gap-4 text-xs font-medium text-on-surface-variant">
+          <div><span class="text-on-surface font-bold" id="kpi-assigned">0</span> Assigned</div>
+          <div><span class="text-on-surface font-bold" id="kpi-avg-time">0</span>h Avg</div>
+        </div>
+      </a>
+      <div class="bg-surface-container-lowest p-4 md:p-6 rounded-xl relative overflow-hidden col-span-2 md:col-span-1">
+        <div class="absolute left-0 top-0 bottom-0 w-1 bg-tertiary-fixed-dim"></div>
+        <p class="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Avg Fill Rate</p>
+        <h2 class="text-3xl md:text-4xl font-bold text-on-surface tracking-tighter" id="kpi-fill">—</h2>
+        <div class="w-full bg-surface-container-high h-1.5 rounded-full mt-3 overflow-hidden">
+          <div class="bg-gradient-to-r from-secondary to-secondary-fixed-dim h-full transition-all duration-500" id="kpi-fill-bar" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Map Section -->
+    <div class="bg-surface-container-lowest rounded-xl overflow-hidden relative shadow-sm">
+      <div class="p-4 md:p-6 flex flex-wrap justify-between items-center gap-3 border-b border-outline-variant/10">
+        <div>
+          <h3 class="text-base md:text-lg font-bold text-on-surface leading-tight">Sector Live Mapping</h3>
+          <p class="text-xs text-on-surface-variant hidden sm:block">Real-time telemetry — waste collection nodes</p>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <button onclick="window.resetSystem()" class="bg-surface-container-high px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-error hover:text-white transition-all">Reset</button>
+          <button id="btn-filter-critical" onclick="window.toggleFilter()" class="bg-surface-container-high px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-surface-container-highest transition-colors">Critical Only</button>
+          <button onclick="window.toggleFullScreen()" class="bg-primary text-white px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider active:scale-95">Full Screen</button>
+        </div>
+      </div>
+      <div class="h-[300px] md:h-[500px] w-full relative bg-surface-container-low overflow-hidden" id="map-container">
+        <div id="map" class="absolute inset-0 z-0 h-full w-full"></div>
+        <!-- Overlay Panel — desktop only -->
+        <div class="map-overlay-panel absolute top-6 left-6 w-56 bg-surface-container-lowest/90 backdrop-blur-md p-4 rounded-xl shadow-xl border border-outline-variant/10 hidden md:block">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Live Traffic</span>
+            <span class="w-2 h-2 bg-secondary rounded-full animate-ping"></span>
+          </div>
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-medium text-on-surface-variant">Sector Alpha</span>
+              <span class="text-xs font-bold text-on-surface">Heavy</span>
+            </div>
+            <div class="w-full bg-surface-container-high h-1 rounded-full"><div class="bg-error h-full" style="width:85%"></div></div>
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-medium text-on-surface-variant">Sector Gamma</span>
+              <span class="text-xs font-bold text-on-surface">Light</span>
+            </div>
+            <div class="w-full bg-surface-container-high h-1 rounded-full"><div class="bg-secondary h-full" style="width:15%"></div></div>
+          </div>
+          <div class="mt-4 pt-4 border-t border-outline-variant/10">
+            <p class="text-[9px] text-on-surface-variant leading-tight"><strong class="text-secondary">Hybrid Intelligence Engine</strong><br/>Predicts critical bins before overflow occurs.</p>
+          </div>
+        </div>
+        <!-- Legend -->
+        <div class="absolute bottom-4 right-4 flex gap-3 bg-primary text-white px-3 py-2 rounded-lg text-[9px] font-bold uppercase tracking-wider backdrop-blur-lg bg-opacity-90 shadow-2xl z-[1000]">
+          <div class="flex items-center gap-1.5"><span class="w-2 h-2 bg-error rounded-full"></span> Critical <span id="legend-red"></span></div>
+          <div class="flex items-center gap-1.5"><span class="w-2 h-2 bg-tertiary-fixed-dim rounded-full"></span> Mid <span id="legend-yellow"></span></div>
+          <div class="flex items-center gap-1.5"><span class="w-2 h-2 bg-secondary rounded-full"></span> OK <span id="legend-green"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bin Table (desktop) / Cards (mobile) -->
+    <div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm">
+      <div class="p-4 md:p-6 border-b border-outline-variant/10 flex justify-between items-center">
+        <h3 class="text-base md:text-lg font-bold text-on-surface">Detailed Bin Telemetry</h3>
+        <span class="text-[10px] text-on-surface-variant font-medium hidden sm:block">Top 15 by fill level</span>
+      </div>
+
+      <!-- Desktop Table -->
+      <div class="desktop-table overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr>
+              <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Bin ID</th>
+              <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Category</th>
+              <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Fill Level</th>
+              <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Priority</th>
+              <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Reason</th>
+              <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Route</th>
+              <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Action</th>
+              <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/5" id="bin-table-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Mobile Cards -->
+      <div class="mobile-bin-cards divide-y divide-outline-variant/5" id="bin-mobile-cards"></div>
+
+      <div class="p-4 bg-surface-container-low/50 text-center">
+        <a href="/waste_stream" class="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant hover:text-primary transition-colors">View All Bins →</a>
+      </div>
+    </div>
+
+  </section>
+</main>
+
+<!-- Bottom Nav (Mobile) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pt-2 pb-[max(12px,env(safe-area-inset-bottom))] bg-white/95 backdrop-blur-lg border-t border-slate-200/60 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+  <a class="flex flex-col items-center justify-center bg-[#006d37] text-white rounded-xl py-2 px-3 active:scale-90 transition-all min-w-[52px]" href="/dashboard">
+    <span class="material-symbols-outlined text-[22px]" style="font-variation-settings:'FILL' 1">home</span>
+    <span class="text-[9px] font-bold tracking-wider uppercase mt-0.5">Home</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-slate-500 py-2 px-3 hover:text-[#006d37] active:scale-90 transition-all min-w-[52px]" href="/route">
+    <span class="material-symbols-outlined text-[22px]">map</span>
+    <span class="text-[9px] font-bold tracking-wider uppercase mt-0.5">Routes</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-slate-500 py-2 px-3 hover:text-[#006d37] active:scale-90 transition-all min-w-[52px]" href="/waste_stream">
+    <span class="material-symbols-outlined text-[22px]">delete</span>
+    <span class="text-[9px] font-bold tracking-wider uppercase mt-0.5">Bins</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-slate-500 py-2 px-3 hover:text-[#006d37] active:scale-90 transition-all min-w-[52px]" href="/analytics">
+    <span class="material-symbols-outlined text-[22px]">bar_chart</span>
+    <span class="text-[9px] font-bold tracking-wider uppercase mt-0.5">Data</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-slate-500 py-2 px-3 hover:text-[#006d37] active:scale-90 transition-all min-w-[52px]" href="/settings">
+    <span class="material-symbols-outlined text-[22px]">settings</span>
+    <span class="text-[9px] font-bold tracking-wider uppercase mt-0.5">Config</span>
+  </a>
+</nav>
+
+<script>
+// Drawer controls
+function openDrawer(){
+  document.getElementById('nav-drawer').classList.remove('-translate-x-full');
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeDrawer(){
+  document.getElementById('nav-drawer').classList.add('-translate-x-full');
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const map = L.map('map', {zoomControl:false}).setView([11.0168,76.9558],13);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
+    attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:'abcd',maxZoom:20
+  }).addTo(map);
+  const markersLayer = L.layerGroup().addTo(map);
+
+  window.loadDashboard = async function() {
+    try {
+      const t = Date.now();
+      const [binsRes,statsRes,settingsRes,routesRes] = await Promise.all([
+        fetch('/api/bins?t='+t),fetch('/api/stats?t='+t),
+        fetch('/api/settings?t='+t),fetch('/api/routes/latest?t='+t)
+      ]);
+      const bins = await binsRes.json();
+      const stats = await statsRes.json();
+      const settings = await settingsRes.json();
+      const routeData = await routesRes.json();
+
+      const threshold_yellow = settings.threshold_yellow;
+      const threshold_red = settings.threshold_red;
+      document.getElementById('legend-red').innerText = `(≥${threshold_red}%)`;
+      document.getElementById('legend-yellow').innerText = `(${threshold_yellow}–${threshold_red-1}%)`;
+      document.getElementById('legend-green').innerText = `(<${threshold_yellow}%)`;
+
+      document.getElementById('kpi-total-bins').innerText = stats.total_bins || 0;
+      document.getElementById('kpi-critical').innerText = String(stats.critical||0).padStart(2,'0');
+      document.getElementById('kpi-fill').innerText = `${stats.avg_fill||0}%`;
+      document.getElementById('kpi-fill-bar').style.width = `${stats.avg_fill||0}%`;
+      document.getElementById('kpi-routes').innerText = routeData.routes ? routeData.routes.length : 0;
+      document.getElementById('kpi-assigned').innerText = routeData.total_bins_assigned || 0;
+      document.getElementById('kpi-avg-time').innerText = routeData.avg_route_time_hrs || 0;
+      if (routeData.last_optimized_timestamp) {
+        const mins = Math.floor((Date.now()/1000 - routeData.last_optimized_timestamp)/60);
+        document.getElementById('kpi-last-opt').innerText = mins <= 1 ? 'Just now' : `${mins}m ago`;
+      } else {
+        document.getElementById('kpi-last-opt').innerText = 'Never';
+      }
+
+      markersLayer.clearLayers();
+      if (routeData && routeData.routes) {
+        routeData.routes.forEach(route => {
+          if(route.path_geometry && route.path_geometry.length > 0) {
+            L.polyline(route.path_geometry,{color:'#006d37',weight:3,opacity:0.25,dashArray:'5,5'}).addTo(markersLayer);
+          }
+        });
+      }
+
+      const tableRows=[], mobileCards=[];
+      const sortedBins = [...bins].sort((a,b)=>b.fill_level-a.fill_level);
+
+      sortedBins.forEach(bin => {
+        let color = '#006d37';
+        if(bin.status==='CRITICAL') color='#ba1a1a';
+        else if(bin.status==='MEDIUM') color='#ffb961';
+        if(window.isFilterCritical && bin.status!=='CRITICAL') return;
+        if(bin.latitude && bin.longitude) {
+          const circle = L.circleMarker([bin.latitude,bin.longitude],{
+            radius: bin.status==='CRITICAL' ? 10 : 6,
+            fillColor:color,color:bin.status==='CRITICAL'?'#ba1a1a':'transparent',
+            weight:bin.status==='CRITICAL'?2:0,opacity:1,fillOpacity:0.9,
+            className:bin.status==='CRITICAL'?'pulse-critical':''
+          });
+          circle.bindTooltip(`<b>#${bin.bin_id}</b>`,{
+            permanent:bin.status==='CRITICAL',direction:'top'
+          });
+          circle.bindPopup(`<b>${bin.bin_id}</b><br>Type: ${bin.bin_type.toUpperCase()}<br>Fill: ${bin.fill_level}%<br>Status: ${bin.status}<br>Overflow: ${bin.time_to_fill_hours}hrs<br>Priority: ${bin.priority_level}<br>Sensor: ${bin.sensor_status}<br><br><button onclick="window.markCollected('${bin.bin_id}')" style="width:100%;background:#006d37;color:white;padding:8px;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;letter-spacing:0.1em;text-transform:uppercase;">Mark Collected</button>`);
+          markersLayer.addLayer(circle);
+        }
+        if(tableRows.length < 15) {
+          const sc = bin.status==='CRITICAL'?'bg-error-container text-on-error-container':bin.status==='MEDIUM'?'bg-tertiary-container text-on-tertiary-container':'bg-secondary-container text-on-secondary-container';
+          const pc = bin.priority_level==='High'?'text-error':bin.priority_level==='Medium'?'text-on-tertiary-container':'text-secondary';
+          tableRows.push(`<tr class="hover:bg-primary-fixed/40 transition-colors cursor-pointer" onclick="window.location.href='/waste_stream?id=${bin.bin_id}'">
+            <td class="px-6 py-4"><div class="font-bold text-on-surface text-sm">#${bin.bin_id}</div></td>
+            <td class="px-6 py-4"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-container-high text-on-surface-variant uppercase">${bin.bin_type.toUpperCase()}</span></td>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-20 bg-surface-container-high h-2 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${bin.fill_level}%;background-color:${color}"></div></div>
+                <span class="text-xs font-bold">${bin.fill_level}%</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-xs font-bold ${pc}">${bin.priority_level}</td>
+            <td class="px-6 py-4 text-xs text-on-surface-variant">${bin.reason}</td>
+            <td class="px-6 py-4 text-xs font-medium">${bin.included_in_route}</td>
+            <td class="px-6 py-4"><button onclick="event.stopPropagation();window.markCollected('${bin.bin_id}')" class="px-3 py-1 rounded-md bg-secondary text-white text-[10px] font-bold uppercase hover:bg-on-secondary-container transition-colors">Collected</button></td>
+            <td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-[10px] font-bold ${sc} uppercase">${bin.status}</span></td>
+          </tr>`);
+          // Mobile card
+          mobileCards.push(`<div class="p-4 cursor-pointer active:bg-surface-container-low" onclick="window.location.href='/waste_stream?id=${bin.bin_id}'">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-sm text-on-surface">#${bin.bin_id}</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-surface-container-high text-on-surface-variant uppercase">${bin.bin_type}</span>
+              </div>
+              <span class="px-2 py-1 rounded-full text-[10px] font-bold ${sc} uppercase">${bin.status}</span>
+            </div>
+            <div class="flex items-center gap-3 mb-2">
+              <div class="flex-1 bg-surface-container-high h-2 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${bin.fill_level}%;background-color:${color}"></div></div>
+              <span class="text-xs font-bold text-on-surface w-10 text-right">${bin.fill_level}%</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] text-on-surface-variant">${bin.reason} · Priority: <strong class="${pc}">${bin.priority_level}</strong></span>
+              <button onclick="event.stopPropagation();window.markCollected('${bin.bin_id}')" class="px-3 py-1 rounded-md bg-secondary text-white text-[10px] font-bold uppercase">✓</button>
+            </div>
+          </div>`);
+        }
+      });
+
+      document.getElementById('bin-table-body').innerHTML = tableRows.join('');
+      document.getElementById('bin-mobile-cards').innerHTML = mobileCards.join('');
+
+      const coords = sortedBins.filter(b=>b.latitude&&b.longitude).map(b=>[b.latitude,b.longitude]);
+      if(coords.length > 0) map.fitBounds(L.latLngBounds(coords),{padding:[20,20]});
+
+    } catch(e){ console.error('Dashboard load error',e); }
+  }
+
+  loadDashboard();
+  setInterval(loadDashboard, 10000);
+});
+
+window.markCollected = async function(binId) {
+  try {
+    const res = await fetch(`/api/collect/${binId}`,{method:'POST'});
+    const data = await res.json();
+    if(data.success) window.loadDashboard();
+  } catch(e){console.error(e);}
+}
+
+window.resetSystem = async function() {
+  if(!confirm('Reset all collected bins to initial state?')) return;
+  try{
+    await fetch('/api/reset',{method:'POST'});
+    window.loadDashboard();
+  }catch(e){console.error(e);}
+}
+
+window.isFilterCritical = false;
+window.toggleFilter = function() {
+  window.isFilterCritical = !window.isFilterCritical;
+  const btn = document.getElementById('btn-filter-critical');
+  btn.classList.toggle('bg-error',window.isFilterCritical);
+  btn.classList.toggle('text-white',window.isFilterCritical);
+  btn.classList.toggle('bg-surface-container-high',!window.isFilterCritical);
+  window.loadDashboard();
+}
+
+window.toggleFullScreen = function() {
+  const el = document.getElementById('map-container');
+  if(!document.fullscreenElement) el.requestFullscreen().catch(err=>console.error(err));
+  else document.exitFullscreen();
+}
+</script>
+</body>
+</html>
